@@ -1,7 +1,8 @@
 from selenium import webdriver
 
 class ScrapeEU:
-    BASE_URL = "https://euvsdisinfo.eu/disinformation-cases/"
+    BASE_URL = "https://euvsdisinfo.eu/"
+    DB_PATH = 'disinformation-cases/'
     CASES_PER_PAGE = 100
 
     def __init__(self, driver_path):
@@ -10,7 +11,7 @@ class ScrapeEU:
     def build_query(self, since, until, query):
         since = self.__convert_date(since)
         until = self.__convert_date(until)
-        return self.BASE_URL+"?text=" + query + "&date=" + since + "%20-%20" + until + "&per_page=" + str(self.CASES_PER_PAGE)
+        return self.BASE_URL+self.DB_PATH+"?text=" + query + "&date=" + since + "%20-%20" + until + "&per_page=" + str(self.CASES_PER_PAGE)
 
     # converts date to European date for query
     def __convert_date(self, date):
