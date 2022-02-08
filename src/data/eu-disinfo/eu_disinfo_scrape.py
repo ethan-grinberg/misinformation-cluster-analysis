@@ -1,4 +1,3 @@
-from lib2to3.pgen2 import driver
 from selenium import webdriver
 import pandas as pd
 
@@ -6,16 +5,29 @@ class ScrapeEU:
     BASE_URL = "https://euvsdisinfo.eu/"
     DB_PATH = 'disinformation-cases/'
     CASES_PER_PAGE = 100
+    COLUMNS = ['date', 'description', 'outlets', 'countries','report_link', 
+                'publication_date','languages','countries_discussed', 'keywords', 'links']
+    PROXIES = ['70.60.132.34:1080',
+                '70.169.129.246:48678',
+                '97.90.49.141:54321',
+                '74.214.177.61:8080',
+                '64.227.2.136:8080',
+                '54.174.159.255:8080',
+                '68.183.237.129:8080',
+                '70.169.70.90:80',
+                '96.66.200.209:64312',
+                '54.213.173.231:80']
 
     def __init__(self, driver_path):
         self.__driver_path = driver_path
+        webdriver.FirefoxOptions()
     
     def search_database(self, since, until, query, limit):
         #start web driver
-        self.__driver = webdriver.Firefox(executable_path=self.__driver_path)
+        self.__start_driver()
 
         current_query = self.__build_query(since, until, query)
-        self.__driver.get(current_query)
+        self.__get_or_rotate_proxy(current_query)
 
         data = []
         for i in range(self.CASES_PER_PAGE):
@@ -26,8 +38,7 @@ class ScrapeEU:
         #quit webdriver
         self.__driver.quit()
 
-        return pd.DataFrame(data, columns=['date', 'description', 'outlets', 'countries','report_link', 
-                'publication_date','languages','countries_discussed', 'keywords', 'links'])
+        return pd.DataFrame(data, columns=self.COLUMNS)
 
     
     def __process_post(self, post, current_query):
@@ -46,7 +57,7 @@ class ScrapeEU:
         report_link = cells[1].find_element_by_css_selector('a').get_attribute('href')
         data.append(report_link)
 
-        self.__driver.get(report_link)
+        self.__get_or_rotate_proxy(report_link)
         cols = self.__driver.find_element_by_class_name("b-catalog__sticky").find_elements_by_tag_name("li")
 
         # data
@@ -66,8 +77,33 @@ class ScrapeEU:
         data.append(links)
 
         #return to the original page
-        self.__driver.get(current_query)
+        self.__get_or_rotate_proxy(current_query)
         return data
+    
+    def __get_or_rotate_proxy(self, query):
+        for i in range(len(self.PROXIES) - 1):
+            print(i)
+            self.__driver.get(query)
+
+            title = self.__driver.find_element_by_tag_name("title").get_attribute("text")
+            if "Access denied" in title:
+                if i == (len(self.PROXIES) - 1):
+                    raise ValueError("all proxies blocked")
+                else:
+                    self.__driver.quit()
+                    self.__start_driver(proxy=self.PROXIES[i])
+            else:
+                break
+
+    
+    def __start_driver(self, proxy=None):
+        if proxy is None:
+            self.__driver = webdriver.Firefox(executable_path=self.__driver_path)
+        else:
+            print(proxy)
+            options = webdriver.FirefoxOptions()
+            options.add_argument(f'--proxy-server={proxy}')
+            self.__driver = webdriver.Firefox(options=options, executable_path=self.__driver_path)
 
     def __build_query(self, since, until, query):
         since = self.__convert_date(since)
