@@ -1,5 +1,6 @@
 from selenium import webdriver
 import pandas as pd
+from sympy import EX
 
 class ScrapeEU:
     BASE_URL = "https://euvsdisinfo.eu/"
@@ -7,22 +8,13 @@ class ScrapeEU:
     CASES_PER_PAGE = 100
     COLUMNS = ['date', 'description', 'outlets', 'countries','report_link', 
                 'publication_date','languages','countries_discussed', 'keywords', 'links']
-    PROXIES = ['70.60.132.34:1080',
-                '70.169.129.246:48678',
-                '97.90.49.141:54321',
-                '74.214.177.61:8080',
-                '64.227.2.136:8080',
-                '54.174.159.255:8080',
-                '68.183.237.129:8080',
-                '70.169.70.90:80',
-                '96.66.200.209:64312',
-                '54.213.173.231:80']
+    PROXIES = []
 
     def __init__(self, driver_path):
         self.__driver_path = driver_path
         webdriver.FirefoxOptions()
     
-    def search_database(self, since, until, query, limit):
+    def search_database(self, since, until, query):
         #start web driver
         self.__start_driver()
 
@@ -33,7 +25,13 @@ class ScrapeEU:
         for i in range(self.CASES_PER_PAGE):
             posts_on_page = self.__driver.find_elements_by_class_name("disinfo-db-post")
             post = posts_on_page[i]
-            data.append(self.__process_post(post, current_query))
+            try: 
+                post = self.__process_post(post, current_query)
+                print(post)
+                data.append(post)
+            except Exception as e:
+                print(e)
+                break
         
         #quit webdriver
         self.__driver.quit()
@@ -81,19 +79,11 @@ class ScrapeEU:
         return data
     
     def __get_or_rotate_proxy(self, query):
-        for i in range(len(self.PROXIES) - 1):
-            print(i)
-            self.__driver.get(query)
+        self.__driver.get(query)
 
-            title = self.__driver.find_element_by_tag_name("title").get_attribute("text")
-            if "Access denied" in title:
-                if i == (len(self.PROXIES) - 1):
-                    raise ValueError("all proxies blocked")
-                else:
-                    self.__driver.quit()
-                    self.__start_driver(proxy=self.PROXIES[i])
-            else:
-                break
+        title = self.__driver.find_element_by_tag_name("title").get_attribute("text")
+        if "Access denied" in title:
+            raise ValueError("scraper was blocked")
 
     
     def __start_driver(self, proxy=None):
