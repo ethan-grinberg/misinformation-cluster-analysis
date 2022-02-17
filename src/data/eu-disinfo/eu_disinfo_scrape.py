@@ -43,8 +43,7 @@ class ScrapeEU:
         cells = post.find_elements_by_tag_name("td")
 
         # data
-        NUM_CELL_DATA = 3
-        for i in range(NUM_CELL_DATA):
+        for i in range(4):
             try:
                 data.append(cells[i].text)
             except Exception as e:
@@ -81,7 +80,8 @@ class ScrapeEU:
         self.__driver.get(query)
 
         title = self.__driver.find_element_by_tag_name("title").get_attribute("text")
-        if "Access denied" in title:
+        print(title)
+        if "Access denied" in title or "Attention" in title:
             raise ValueError("scraper was blocked")
 
     
