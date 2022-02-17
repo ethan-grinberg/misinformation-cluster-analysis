@@ -1,6 +1,5 @@
 from selenium import webdriver
 import pandas as pd
-from sympy import EX
 
 class ScrapeEU:
     BASE_URL = "https://euvsdisinfo.eu/"
@@ -105,5 +104,3 @@ class ScrapeEU:
         date = date.split("-")
         date = date[1] + "." + date[0] + "." + date[2]
         return date
-
-
