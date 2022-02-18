@@ -1,5 +1,6 @@
 import snscrape.modules.twitter as sntwitter
 import pandas as pd
+import numpy as np
 
 class TwitterScraper:
     def __init__(self):
@@ -11,7 +12,13 @@ class TwitterScraper:
         if not since is None:
             query = query + " since:" +  since
 
-        return self.__get_tweets_query(query, limit)
+        tweets =  self.__get_tweets_query(query, limit)
+        self.__clean_df(tweets)
+        return tweets
+
+    def __clean_df(self, df):
+        df["id"] = df["id"].astype(np.int64)
+        df["user_id"] = df["user_id"].astype(np.int64)
 
     def __get_tweets_query(self, query, limit):
         tweets = []
