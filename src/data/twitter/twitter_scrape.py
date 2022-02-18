@@ -2,11 +2,12 @@ import snscrape.modules.twitter as sntwitter
 import pandas as pd
 
 class TwitterScraper:
-    def __init__(self, article_url):
-        self.__article_url = article_url
+    def __init__(self):
+        pass
+       
 
-    def find_article_tweets(self, limit, since=None):
-        query = "url:" + self.__article_url
+    def find_article_tweets(self, article_url, limit, since=None):
+        query = "url:" + article_url
         if not since is None:
             query = query + " since:" +  since
 
