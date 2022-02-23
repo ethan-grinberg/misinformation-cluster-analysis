@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
-from operator import index
 import os
 import logging
 from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
 from collect_eu_disinfo import EuDisinfo
 from twitter_scrape import TwitterScraper
+from collect_hoaxy import HoaxyApi
 import pandas as pd
 
 
 # either make the dataset from the hoaxy api or scrape from eu vs disinfo and twitter
-def main(proj_dir, hoaxy_api=True):
+def main(proj_dir, hoaxy=True):
     """ Runs data processing scripts to turn raw data from (../raw) into
         cleaned data ready to be analyzed (saved in ../processed).
     """
     logger = logging.getLogger(__name__)
     logger.info('creating final dataset')
 
-    if hoaxy_api:
-        pass
+    if hoaxy:
+        h_api = HoaxyApi(os.environ.get("RAPID"))
     else:
         ext_data = os.path.join(proj_dir, "data", "external")
         combined_file = os.path.join(ext_data, "combined_claims.pkl")
