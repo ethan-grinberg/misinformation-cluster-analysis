@@ -1,7 +1,8 @@
 from selenium import webdriver
 import pandas as pd
+import os
 
-class ScrapeEU:
+class EuDisinfo:
     BASE_URL = "https://euvsdisinfo.eu/"
     DB_PATH = 'disinformation-cases/'
     CASES_PER_PAGE = 100
@@ -11,9 +12,47 @@ class ScrapeEU:
 
     def __init__(self, driver_path):
         self.__driver_path = driver_path
-        webdriver.FirefoxOptions()
+
+    def get_downloaded_dataset(self, external_data_path):
+        claim_reviews = pd.read_csv(os.path.join(external_data_path, "all_claim_reviews.csv"))
+        all_countries = pd.read_csv(os.path.join(external_data_path, "all_countries.csv"))
+        all_keywords = pd.read_csv(os.path.join(external_data_path, 'all_keywords.csv'))
+        all_news_articles = pd.read_csv(os.path.join(external_data_path, "all_news_articles.csv"))
+        all_organizations = pd.read_csv(os.path.join(external_data_path, "all_organisations.csv"))
+        all_claims = pd.read_json(os.path.join(external_data_path, "claims.json"))
+
+        all_data = []
+        for i in range(len(all_claims)):
+            data = {}
+            item = all_claims.iloc[i]
+
+            # date
+            data["date"] = item.datePublished
+
+            #claim data
+            claim = item.claimReview
+            data["claim"] = claim_reviews.loc[claim_reviews["@id"] == claim].name.values[0]
+
+            #article
+            app = item.appearances
+            data["links"] = all_news_articles.loc[all_news_articles["@id"].isin(app)].url.to_list()
+            authors = all_news_articles.loc[all_news_articles["@id"].isin(app)].author.to_list()
+            data["organizations"] = all_organizations.loc[all_organizations["@id"].isin(authors)].name.to_list()
+
+            #keywords
+            keywords = item.keywords
+            data["keywords"] = all_keywords.loc[all_keywords["@id"].isin(keywords)].name.to_list()
+
+            #countries
+            countries = item.contentLocations
+            data["countries"] = all_countries.loc[all_countries["@id"].isin(countries)].name.to_list()
+
+
+            all_data.append(data)
     
-    def search_database(self, since, until, query):
+        return pd.DataFrame(all_data)
+    
+    def scrape_database(self, since, until, query):
         #start web driver
         self.__start_driver()
 
