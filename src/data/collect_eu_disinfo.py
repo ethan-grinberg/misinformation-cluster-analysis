@@ -12,7 +12,9 @@ class EuDisinfo:
 
     def __init__(self, driver_path):
         self.__driver_path = driver_path
-
+    
+    # combines the data from https://github.com/alix-dumoulin/eu_disinformation/tree/master/shiny-dashboard
+    # into one data frame
     def get_downloaded_dataset(self, external_data_path):
         claim_reviews = pd.read_csv(os.path.join(external_data_path, "all_claim_reviews.csv"))
         all_countries = pd.read_csv(os.path.join(external_data_path, "all_countries.csv"))
