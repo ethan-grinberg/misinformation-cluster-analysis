@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from curses import raw
 import os
 import logging
 from pathlib import Path
@@ -17,10 +18,18 @@ def main(proj_dir, hoaxy=True):
     logger = logging.getLogger(__name__)
     logger.info('creating final dataset')
 
+    ext_data = os.path.join(proj_dir, "data", "external")
+    raw_data = os.path.join(proj_dir, "data", "raw")
     if hoaxy:
+        # iffy list that hoaxy uses
+        iffy_list = pd.read_csv(os.path.join(ext_data, "iffy+.csv"))
+        domains = iffy_list.Domain.to_list()
+
+        # get networks for all domains
         h_api = HoaxyApi(os.environ.get("RAPID"))
+        networks = h_api.get_networks_all_domains(domains)
+        networks.to_csv(os.path.join(raw_data, "all_networks.csv"), index=False)
     else:
-        ext_data = os.path.join(proj_dir, "data", "external")
         combined_file = os.path.join(ext_data, "combined_claims.pkl")
 
         # combine eu data from downloaded source
@@ -36,7 +45,7 @@ def main(proj_dir, hoaxy=True):
         all_tweets = t_scrape.find_tweets_all_articles(claim_df)
         
         # export tweet
-        all_tweets.to_csv(os.path.join(proj_dir, "data", "raw", "all_article_tweets.csv"),index=False)
+        all_tweets.to_csv(os.path.join(raw_data, "all_article_tweets.csv"),index=False)
 
 if __name__ == '__main__':
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'

@@ -1,5 +1,6 @@
 import requests
 import json
+import pandas as pd
 
 class HoaxyApi:
     HOST = "api-hoaxy.p.rapidapi.com"
@@ -10,6 +11,28 @@ class HoaxyApi:
             'x-rapidapi-host': self.HOST, 
             'x-rapidapi-key': rapid_api_key
             }
+    
+    def get_networks_all_domains(self, domains, node_limit=1000, edge_limit=12500):
+        all_networks = []
+        for domain in domains:
+            # get articles for domain
+            response = self.search_by_domain(domain)
+            articles = []
+            try:
+                articles = response['articles']
+            except Exception as e:
+                continue
+
+            # get network for all articles
+            ids = [a['id'] for a in articles]
+            network = self.get_network(ids, node_limit=node_limit, edge_limit=edge_limit)
+            try:
+                network = pd.DataFrame(network['edges'])
+                all_networks.append(network)
+            except Exception as e:
+                continue
+
+        return pd.concat(all_networks)
 
     def search_by_domain(self, domain):
         q = {"query":f"domain:{domain}","use_lucene_syntax":"true","sort_by":"relevant"}
