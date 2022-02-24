@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from curses import raw
 import os
 import logging
 from pathlib import Path
