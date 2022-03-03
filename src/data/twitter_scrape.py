@@ -26,8 +26,13 @@ class TwitterScraper:
         all_tweets = pd.concat(dfs)
         return all_tweets
 
-    def find_article_tweets(self, article_url, limit, since=None):
-        query = "url:" + article_url
+    def find_article_tweets(self, q, limit, since=None, article=True):
+        query = None
+        if article:
+            query = "url:" + q
+        else:
+            query = q
+            
         if not since is None:
             query = query + " since:" +  since
 
