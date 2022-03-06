@@ -63,6 +63,7 @@ class GraphEmbed:
     
     def read_graphs(self, dir):
         if self.embed == False:
+            self.graphs = []
             for f in  os.listdir(dir):
                 path = os.path.join(dir, f)
                 g = nx.read_edgelist(path, create_using=nx.DiGraph)
