@@ -21,7 +21,6 @@ def main(proj_dir):
     GE.fit()
     embedding_df = GE.get_embedding_df()
     embedding_df.to_pickle(os.path.join(proj_dir, "data", "processed", "graph_data.pkl"))
-    print("here")
     GE.write_graphs(os.path.join(proj_dir, "data", "processed", "graphs"))
 
 if __name__ == '__main__':

@@ -1,4 +1,3 @@
-from venv import create
 import pandas as pd
 import numpy as np
 import networkx as nx
@@ -58,7 +57,6 @@ class GraphEmbed:
             g = self.graphs[i]
             id = self.ids[i]
             path = os.path.join(dir, str(id) +  ".edgelist")
-            print(path)
             nx.write_edgelist(g, path)
     
     def read_graphs(self, dir):
