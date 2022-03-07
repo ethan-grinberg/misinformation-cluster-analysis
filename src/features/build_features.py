@@ -16,7 +16,7 @@ def main(proj_dir):
 
     all_networks = pd.read_csv(os.path.join(proj_dir, "data", "raw", "all_networks.csv"))
 
-    GE = GraphEmbed("graph2vec")
+    GE = GraphEmbed(type="graph2vec", params={'seed': 0})
     GE.build_graphs(all_networks, 5)
     GE.fit()
     embedding_df = GE.get_embedding_df()
