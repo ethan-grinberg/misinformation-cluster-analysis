@@ -61,11 +61,14 @@ class GraphEmbed:
     
     def read_graphs(self, dir):
         if self.embed == False:
-            self.graphs = []
-            for f in  os.listdir(dir):
+            graphs = {}
+            for f in os.listdir(dir):
                 path = os.path.join(dir, f)
                 g = nx.read_edgelist(path, create_using=nx.DiGraph)
-                self.graphs.append(g)
+                
+                name = int(f.split(".")[0])
+                graphs[name] = g
+            return graphs
 
     def get_graphs(self):
         return self.graphs
