@@ -5,8 +5,18 @@ from kneed import KneeLocator
 from sklearn.metrics import pairwise_distances_argmin_min
 
 class ClusterGraphs:
-    def __init__(self, graph_vecs):
-        self.graph_vecs = graph_vecs      
+    def __init__(self, graph_info_df):
+        self.graph_info_df = graph_info_df.copy()
+        self.graph_vecs = graph_info_df.graph_embedding.to_list()    
+
+    def get_clustered_df(self):
+        self.graph_info_df['label'] = self.labels.to_list()
+        self.graph_info_df['is_mean_vec'] = np.repeat(False, len(self.graph_info_df))
+        for l in self.labels.unique():
+            idx = self.get_mean_vec_cluster(l)
+            self.graph_info_df.at[idx, 'is_mean_vec'] = True
+        
+        return self.graph_info_df
 
     def choose_clust_num_k_means(self, end=11):
         inertias = []

@@ -14,13 +14,12 @@ def main(proj_dir):
     logger = logging.getLogger(__name__)
     logger.info('extracting features from graphs')
 
-    all_networks = pd.read_csv(os.path.join(proj_dir, "data", "raw", "all_networks.csv"))
+    graph_data = pd.read_pickle(os.path.join(proj_dir, "data", "processed", "graph_data.pkl"))
 
-    GE = GraphEmbed("graph2vec")
-    GE.build_graphs(all_networks, 5)
-    GE.fit()
-    embedding_df = GE.get_embedding_df()
-    embedding_df.to_pickle(os.path.join(proj_dir, "data", "processed", "graph_embeddings.pkl"))
+    cluster = ClusterGraphs(graph_data)
+    cluster.cluster_k_means(n_clusters=3)
+    cluster_df = cluster.get_clustered_df()
+    cluster_df.to_pickle(os.path.join(proj_dir, "models", "graphs_clustered.pkl"))
 
 if __name__ == '__main__':
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
