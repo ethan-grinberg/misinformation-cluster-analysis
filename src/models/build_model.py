@@ -17,7 +17,7 @@ def main(proj_dir):
     graph_data = pd.read_pickle(os.path.join(proj_dir, "data", "processed", "graph_data.pkl"))
 
     cluster = ClusterGraphs(graph_data)
-    cluster.cluster_k_means(n_clusters=3)
+    cluster.cluster_k_means()
     cluster_df = cluster.get_clustered_df()
     cluster_df.to_pickle(os.path.join(proj_dir, "models", "graphs_clustered.pkl"))
 
