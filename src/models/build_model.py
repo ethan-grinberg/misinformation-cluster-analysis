@@ -5,6 +5,9 @@ from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
 import pandas as pd
 from cluster_graphs import ClusterGraphs
+import sys
+sys.path.append("../visualization")
+from visualize import Visualize
 
 
 def main(proj_dir):
@@ -12,7 +15,7 @@ def main(proj_dir):
         cleaned data ready to be analyzed (saved in ../processed).
     """
     logger = logging.getLogger(__name__)
-    logger.info('extracting features from graphs')
+    logger.info('clustering graphs')
 
     graph_data = pd.read_pickle(os.path.join(proj_dir, "data", "processed", "graph_data.pkl"))
 
@@ -20,6 +23,12 @@ def main(proj_dir):
     cluster.cluster_k_means()
     cluster_df = cluster.get_clustered_df()
     cluster_df.to_pickle(os.path.join(proj_dir, "models", "graphs_clustered.pkl"))
+
+    # export graphs with labelled clusters to file for visualization
+    viz = Visualize(cluster_df)
+    graphs = viz.export_graphs_for_viz()
+    graphs.to_csv(os.path.join(proj_dir, "reports", "graph_edges.csv"))
+
 
 if __name__ == '__main__':
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'

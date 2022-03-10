@@ -1,11 +1,12 @@
 import altair as alt
 from matplotlib import pyplot as plt
-from sklearn import cluster
+import numpy as np
+import pandas as pd
 import networkx as nx
 
 
 class Visualize:
-    def __init__(self, cluster_info, graphs):
+    def __init__(self, cluster_info, graphs=None):
         self.cluster_info = cluster_info
         self.graphs = graphs
 
@@ -40,3 +41,20 @@ class Visualize:
             .facet(columns=cols, facet="category:N")
         )
         return chart
+    
+    def export_graphs_for_viz(self):
+        cur = 0
+        dfs = []
+        for i in range(len(self.cluster_info)):
+            edges = self.cluster_info.iloc[i].edges
+            label = self.cluster_info.iloc[i].label
+            arr = np.array(edges)
+            for i in range(arr.max() + 1):
+                arr = np.where(arr == i, cur, arr)
+                cur += 1
+            df = pd.DataFrame(arr, columns=['source', 'target'])
+            df['label'] = label
+            dfs.append(df)
+        
+        all_edges = pd.concat(dfs)
+        return all_edges

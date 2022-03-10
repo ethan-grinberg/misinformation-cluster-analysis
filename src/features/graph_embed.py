@@ -41,6 +41,7 @@ class GraphEmbed:
                 extra_data['id'] = id
                 extra_data['site_type'] = network.iloc[0].site_type
                 extra_data['title'] = network.iloc[0].title
+                extra_data['edges'] = list(relabel_g.edges)
 
                 self.__get_network_data(relabel_g, extra_data)
                 self.data.append(extra_data)
