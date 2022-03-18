@@ -52,24 +52,10 @@ class GraphEmbed:
         extra_data['num_strongly_connected'] = nx.number_strongly_connected_components(graph)
         extra_data['num_weakly_connected'] = nx.number_weakly_connected_components(graph)
         extra_data['average_clustering_coef'] = nx.average_clustering(graph)
-
-    def write_graphs(self, dir):
-        for i in range(len(self.graphs)):
-            g = self.graphs[i]
-            id = self.ids[i]
-            path = os.path.join(dir, str(id) +  ".edgelist")
-            nx.write_edgelist(g, path)
     
-    def read_graphs(self, dir):
-        if self.embed == False:
-            graphs = {}
-            for f in os.listdir(dir):
-                path = os.path.join(dir, f)
-                g = nx.read_edgelist(path, create_using=nx.DiGraph)
-                
-                name = int(f.split(".")[0])
-                graphs[name] = g
-            return graphs
+    def read_graphs(self, graph_data):
+        graphs = [nx.DiGraph(e) for e in graph_data.edges]
+        return graphs
 
     def get_graphs(self):
         return self.graphs
