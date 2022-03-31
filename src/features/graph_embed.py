@@ -2,16 +2,13 @@ import pandas as pd
 import numpy as np
 import networkx as nx
 import karateclub.graph_embedding as ge
-import os
+from u_graph_emb import UGraphEmb
 
 class GraphEmbed:
-    models = {"feather": ge.FeatherGraph(), "graph2vec": ge.Graph2Vec()}
+    models = {"feather": ge.FeatherGraph(), "graph2vec": ge.Graph2Vec(), "ugraphemb": UGraphEmb()}
 
     def __init__(self, type=None, params=None):
-        if type is None:
-            self.embed = False
-        else:
-            self.embed = True
+        if type is not None:
             self.model = self.models[type]
             if not params is None:
                 for k, v in params.items():
@@ -70,5 +67,3 @@ class GraphEmbed:
         df = pd.DataFrame(self.data)
         df['graph_embedding'] = self.get_embedding().tolist()
         return df
-
-
