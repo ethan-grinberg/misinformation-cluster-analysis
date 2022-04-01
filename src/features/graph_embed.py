@@ -58,7 +58,7 @@ class GraphEmbed:
     
     def read_graphs(self, graph_data):
         graphs = [nx.DiGraph(e) for e in graph_data.edges]
-        return graphs
+        return {graph_data.iloc[i].id: graphs[i] for i in np.arange(len(graph_data))} 
 
     def get_graphs(self):
         return self.graphs
