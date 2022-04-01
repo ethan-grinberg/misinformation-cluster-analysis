@@ -5,13 +5,18 @@ import tensorflow as tf
 from tensorflow import keras
 
 class UGraphEmb:
-    def __init__(self, num_pairs=100, 
+    def __init__(self, 
+                node_features="out-degree",
+                graph_dist = "edit",
+                dist_timeout = 5,
+                num_pairs=100, 
                 layer_sizes=[64,32], 
                 activation_func='relu', 
                 pool_all_layers=True,
                 batch_size=10,
                 epochs=500,
                 verbose=0):
+        self.node_features = node_features
         self.a_func = activation_func
         self.num_pairs = num_pairs
         self.layer_sizes = layer_sizes
@@ -19,8 +24,11 @@ class UGraphEmb:
         self.batch_size = batch_size
         self.epochs = epochs
         self.verbose = verbose
+        self.graph_dist = graph_dist
+        self.dist_timeout = dist_timeout
 
     def fit(self, nx_graphs):
+        print('fitting ugraphemb model')
         graphs = self.__convert_sg(nx_graphs)
 
         # create model
@@ -37,7 +45,7 @@ class UGraphEmb:
 
         # training
         graph_idx = np.random.RandomState(0).randint(len(graphs), size=(self.num_pairs, 2))
-        targets = [self.__graph_distance(nx_graphs[left], nx_graphs[right]) for left, right in graph_idx]
+        targets = [self.__graph_distance(nx_graphs[left], nx_graphs[right], self.graph_dist) for left, right in graph_idx]
         train_gen = generator.flow(graph_idx, batch_size=self.batch_size, targets=targets)
 
         # training procedure
@@ -53,9 +61,17 @@ class UGraphEmb:
     def __convert_sg(self, nx_graphs):
         graphs = []
         for g in nx_graphs:
-            graphs.append(sg.StellarDiGraph(graph=g, node_features='out-degree'))
+            graphs.append(sg.StellarDiGraph(graph=g, node_features=self.node_features))
         
         return graphs
     
-    def __graph_distance(self, g1, g2):
-        return nx.graph_edit_distance(g1, g2)
+    def __graph_distance(self, g1, g2, graph_d):
+        if graph_d == "edit":
+            d = nx.graph_edit_distance(g1, g2, timeout=self.dist_timeout)
+            if d is None:
+                print("none")
+                return np.float32(-1)
+            else:
+                return d.astype(np.float32)
+
+

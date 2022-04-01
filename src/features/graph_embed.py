@@ -8,7 +8,7 @@ class GraphEmbed:
     models = {"feather": ge.FeatherGraph(), "graph2vec": ge.Graph2Vec(), "ugraphemb": UGraphEmb()}
 
     def __init__(self, type=None, params=None):
-        if type is not None:
+        if not type is None:
             self.model = self.models[type]
             if not params is None:
                 for k, v in params.items():
