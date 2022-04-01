@@ -53,7 +53,7 @@ class UGraphEmb:
     def __convert_sg(self, nx_graphs):
         graphs = []
         for g in nx_graphs:
-            graphs.append(sg.StellarDiGraph(graph=g))
+            graphs.append(sg.StellarDiGraph(graph=g, node_features='out-degree'))
         
         return graphs
     

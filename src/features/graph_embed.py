@@ -27,8 +27,14 @@ class GraphEmbed:
                 g = nx.DiGraph()
                 g.add_edges_from(edges)
                 relabel_g = nx.convert_node_labels_to_integers(g)
+
+                # add out degree centrality attribute to nodes
+                centrality = nx.out_degree_centrality(relabel_g)
+                centrality = {key:[value] for (key,value) in centrality.items()}
+                nx.set_node_attributes(relabel_g, centrality, "out-degree")
+
+                # append to list of graphs
                 self.graphs.append(relabel_g)
-                self.ids.append(id)
 
                 # append data
                 extra_data = {}
