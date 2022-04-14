@@ -119,13 +119,13 @@ class GraphEmbed:
         extra_data['edges'] = list(edges)
         extra_data['num_nodes'] = num_nodes
         extra_data['num_edges'] = num_edges
-        extra_data['num_scc'] = num_scc
-        extra_data['num_wcc'] = num_wcc
-        extra_data['largest_scc'] = largest_scc
-        extra_data['largest_wcc'] = largest_wcc
-        extra_data['diameter_largest_wcc'] = largest_di
-        extra_data['max_out_degree'] = max_out
-        extra_data['max_in_degree'] = max_in
+        extra_data['num_scc'] = num_scc / num_nodes
+        extra_data['num_wcc'] = num_wcc / num_nodes
+        extra_data['largest_scc'] = largest_scc / num_nodes
+        extra_data['largest_wcc'] = largest_wcc / num_nodes
+        extra_data['diameter_largest_wcc'] = largest_di / num_nodes
+        extra_data['max_out_degree'] = max_out / num_nodes
+        extra_data['max_in_degree'] = max_in / num_nodes
     
     def __build_graphs(self):
         self.graphs = []
