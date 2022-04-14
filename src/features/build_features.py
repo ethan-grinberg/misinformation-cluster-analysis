@@ -15,12 +15,11 @@ def main(proj_dir):
     logger.info('extracting features from graphs')
 
     all_networks = pd.read_csv(os.path.join(proj_dir, "data", "raw", "all_networks.csv"))
+    p_data_file = os.path.join(proj_dir, "data", "processed", "graph_data.pkl")
 
-    GE = GraphEmbed(type="ugraphemb")
-    GE.build_graphs(all_networks, 5)
-    GE.fit()
-    embedding_df = GE.get_embedding_df()
-    embedding_df.to_pickle(os.path.join(proj_dir, "data", "processed", "graph_data.pkl"))
+    GE = GraphEmbed(p_data_file, 5, all_networks, type="ugraphemb")
+    embedding_df = GE.get_features()
+    embedding_df.to_pickle(p_data_file)
 
 if __name__ == '__main__':
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
