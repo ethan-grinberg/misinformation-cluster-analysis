@@ -1,4 +1,3 @@
-from lib2to3.pgen2.pgen import DFAState
 import pandas as pd
 import numpy as np
 import networkx as nx
@@ -38,7 +37,7 @@ class GraphEmbed:
         self.graph_df = raw_networks.groupby("id").filter(lambda x: len(x) >= self.min_edges)
         
         # set the order of ids
-        ids = self.graph_df.id.unique()
+        ids = list(self.graph_df.id.unique())
         ids.sort()
         self.ids = ids
 
@@ -51,14 +50,21 @@ class GraphEmbed:
             df['graph_embedding'] = embeddings
         else:
             df = pd.read_pickle(self.f_path)
+            old_ids = df.id.to_list()
+            df = pd.DataFrame(df.graph_embedding)
 
-        combined_df = self.__combine_features(df)
-        # remove duplicate column names
-        combined_df = combined_df.loc[:,~combined_df.columns.duplicated()]
-        
+        extra_features = self.__get_extra_features()
+
+        # make sure the precomputed graph embeddings 
+        # line up with new data
+        if self.has_embeddings:
+            if not list(extra_features.id) == old_ids:
+                raise ValueError("pre computed graph embeddings don't line up with extra features")
+            
+        combined_df = pd.concat([df, extra_features], axis=1)
         return combined_df
     
-    def __combine_features(self, emb_df):
+    def __get_extra_features(self):
         all_data = []
         i = 0
         for id in self.ids:
@@ -79,8 +85,7 @@ class GraphEmbed:
             all_data.append(row_data)
             i += 1
         
-        other_features = pd.DataFrame(all_data)
-        return pd.concat([emb_df, other_features], axis=1)
+        return pd.DataFrame(all_data) 
 
     def __build_graphs(self):
         self.graphs = []
@@ -109,7 +114,6 @@ class GraphEmbed:
         extra_data['num_edges'] = len(graph.edges)
         extra_data['num_strongly_connected'] = nx.number_strongly_connected_components(graph)
         extra_data['num_weakly_connected'] = nx.number_weakly_connected_components(graph)
-        extra_data['average_clustering_coef'] = nx.average_clustering(graph) 
 
     def __fit(self):
         self.model.fit(self.graphs)
