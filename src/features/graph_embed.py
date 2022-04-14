@@ -72,21 +72,61 @@ class GraphEmbed:
             network_info = self.graph_df.loc[self.graph_df.id == id]
 
             row_data = {}
-            row_data['canonical_url'] = network_info.iloc[0].canonical_url
-            row_data['date_published'] = network_info.iloc[0].date_published
-            row_data['domain'] = network_info.iloc[0].domain
-            row_data['id'] = id
-            row_data['site_type'] = network_info.iloc[0].site_type
-            row_data['title'] = network_info.iloc[0].title
-            row_data['edges'] = list(g.edges)
-
+            self.__get_article_data(network_info, row_data, id)
             self.__get_network_data(g, row_data)
-            
             all_data.append(row_data)
+
             i += 1
         
-        return pd.DataFrame(all_data) 
+        return pd.DataFrame(all_data)
+    
+    def __get_article_data(self, network_info, row_data, id):
+        row_data['canonical_url'] = network_info.iloc[0].canonical_url
+        row_data['date_published'] = network_info.iloc[0].date_published
+        row_data['domain'] = network_info.iloc[0].domain
+        row_data['id'] = id
+        row_data['site_type'] = network_info.iloc[0].site_type
+        row_data['title'] = network_info.iloc[0].title
 
+    def __get_network_data(self, graph, extra_data):
+        # size
+        edges = graph.edges
+        nodes = graph.nodes
+        num_nodes = len(nodes)
+        num_edges = len(edges)
+
+        # components
+        scc = list(nx.strongly_connected_components(graph))
+        wcc = [c for c in sorted(nx.weakly_connected_components(graph), key=len, reverse=True)]
+        
+        num_scc = len(scc)
+        num_wcc = len(wcc)
+        largest_scc = max([len(comp) for comp in scc])
+        largest_wcc = len(wcc[0])
+
+        # distance
+        H = graph.subgraph(wcc[0])
+        H = H.to_undirected()
+        largest_di = nx.diameter(H)
+
+        #degree
+        out_deg = [deg[1] for deg in graph.out_degree()]
+        in_deg = [deg[1] for deg in graph.in_degree()]
+        max_in = max(in_deg)
+        max_out = max(out_deg)
+
+        # append data
+        extra_data['edges'] = list(edges)
+        extra_data['num_nodes'] = num_nodes
+        extra_data['num_edges'] = num_edges
+        extra_data['num_scc'] = num_scc
+        extra_data['num_wcc'] = num_wcc
+        extra_data['largest_scc'] = largest_scc
+        extra_data['largest_wcc'] = largest_wcc
+        extra_data['diameter_largest_wcc'] = largest_di
+        extra_data['max_out_degree'] = max_out
+        extra_data['max_in_degree'] = max_in
+    
     def __build_graphs(self):
         self.graphs = []
         for id in self.ids:
@@ -108,12 +148,6 @@ class GraphEmbed:
         nx.set_node_attributes(relabel_g, centrality, "out-degree")
 
         return relabel_g
-
-    def __get_network_data(self, graph, extra_data):
-        extra_data['num_nodes'] = len(graph.nodes)
-        extra_data['num_edges'] = len(graph.edges)
-        extra_data['num_strongly_connected'] = nx.number_strongly_connected_components(graph)
-        extra_data['num_weakly_connected'] = nx.number_weakly_connected_components(graph)
 
     def __fit(self):
         self.model.fit(self.graphs)
