@@ -1,14 +1,16 @@
+from json import tool
 import altair as alt
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 import networkx as nx
-
+from sklearn.manifold import TSNE
 
 class Visualize:
     def __init__(self, cluster_info, graphs=None):
         self.cluster_info = cluster_info
         self.graphs = graphs
+        self.X = np.array(cluster_info.graph_embedding.to_list())
 
     def viz_graphs(self, ids):
         for i in range(len(ids)):
@@ -20,10 +22,42 @@ class Visualize:
         id = self.cluster_info.iloc[idx].id
         return self.graphs[id]
 
+    def graph_reduced_dimensions(self, tooltip_data):
+        tsne = TSNE(2)
+        two_d = tsne.fit_transform(self.X)
+
+        components = pd.DataFrame(two_d, columns=['dim1', 'dim2'])
+        components['label'] = self.cluster_info.label
+        for col in tooltip_data:
+            components[col] = self.cluster_info[col]
+        
+        chart = alt.Chart(components).mark_circle(size=60).encode(
+                    x='dim1',
+                    y='dim2',
+                    color='label:N',
+                    tooltip=tooltip_data
+                ).interactive()
+
+        return chart
+    
+    def plot_cluster_size(self, width=200, height=300):
+        df  = pd.DataFrame(self.cluster_info.label.value_counts())
+        df = df.rename({"label": "count"}, axis=1)
+        df['label'] = df.index
+        df = df.reset_index()
+
+        chart = alt.Chart(df).mark_bar().encode(
+            x='label:N',
+            y='count',
+            color="label:N"
+        ).properties(width=width, height=height)
+
+        return chart
+
     def graph_point_range_cluster_info(self, y_vals, width, height, cols):
         points = (
             alt.Chart()
-            .mark_point(size=50)
+            .mark_point(size=70)
             .transform_fold(fold=y_vals, as_=["category", "y"])
             .encode(x="label:N", y=alt.Y("mean(y):Q"), color="label:N")
         )
