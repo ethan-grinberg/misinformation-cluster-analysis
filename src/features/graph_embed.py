@@ -73,7 +73,7 @@ class GraphEmbed:
 
             row_data = {}
             self.__get_article_data(network_info, row_data, id)
-            self.__get_network_data(g, row_data)
+            self.__get_network_data(g, row_data, network_info)
             all_data.append(row_data)
 
             i += 1
@@ -81,14 +81,19 @@ class GraphEmbed:
         return pd.DataFrame(all_data)
     
     def __get_article_data(self, network_info, row_data, id):
+        times = network_info.tweet_created_at
+        times  = pd.to_datetime(times).sort_values().to_list()
+        time_r = (times[-1] - times[0]).total_seconds()
+
         row_data['canonical_url'] = network_info.iloc[0].canonical_url
         row_data['date_published'] = network_info.iloc[0].date_published
         row_data['domain'] = network_info.iloc[0].domain
         row_data['id'] = id
         row_data['site_type'] = network_info.iloc[0].site_type
         row_data['title'] = network_info.iloc[0].title
+        row_data['total_time'] = time_r
 
-    def __get_network_data(self, graph, extra_data):
+    def __get_network_data(self, graph, extra_data, network_info):
         # size
         edges = graph.edges
         nodes = graph.nodes
@@ -123,9 +128,12 @@ class GraphEmbed:
         extra_data['num_wcc'] = num_wcc / num_nodes
         extra_data['largest_scc'] = largest_scc / num_nodes
         extra_data['largest_wcc'] = largest_wcc / num_nodes
-        extra_data['diameter_largest_wcc'] = largest_di / num_nodes
+        extra_data['diameter_largest_wcc'] = largest_di
         extra_data['max_out_degree'] = max_out / num_nodes
         extra_data['max_in_degree'] = max_in / num_nodes
+        extra_data['mean_out_degree'] = sum(out_deg) / len(out_deg)
+        extra_data['mean_in_degree'] = sum(in_deg) / len(in_deg)
+        extra_data['average_time'] = extra_data['total_time'] / num_nodes
     
     def __build_graphs(self):
         self.graphs = []
