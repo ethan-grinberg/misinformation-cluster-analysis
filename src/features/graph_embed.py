@@ -81,9 +81,14 @@ class GraphEmbed:
         return pd.DataFrame(all_data)
     
     def __get_article_data(self, network_info, row_data, id):
+        num_tweets = len(network_info)
+        # retweet times
         times = network_info.tweet_created_at
         times  = pd.to_datetime(times).sort_values().to_list()
         time_r = (times[-1] - times[0]).total_seconds()
+
+        # information types
+        types = network_info.tweet_type.value_counts().to_dict()
 
         row_data['canonical_url'] = network_info.iloc[0].canonical_url
         row_data['date_published'] = network_info.iloc[0].date_published
@@ -92,6 +97,10 @@ class GraphEmbed:
         row_data['site_type'] = network_info.iloc[0].site_type
         row_data['title'] = network_info.iloc[0].title
         row_data['total_time'] = time_r
+        row_data['retweet_num'] = types.get("retweet", 0) / num_tweets
+        row_data['quote_num'] = types.get("quote", 0) / num_tweets
+        row_data['reply_num'] = types.get("reply", 0) / num_tweets
+        row_data['origin_num'] = types.get("origin", 0) / num_tweets
 
     def __get_network_data(self, graph, extra_data, network_info):
         # size
