@@ -86,3 +86,5 @@ target/
 
 # Mypy cache
 .mypy_cache/
+reports/figures/misinfo_viz.jpg
+reports/figures/misinfo_viz.svg
