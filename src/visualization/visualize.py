@@ -1,10 +1,10 @@
-from json import tool
 import altair as alt
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 import networkx as nx
 from sklearn.manifold import TSNE
+import seaborn as sns
 
 class Visualize:
     def __init__(self, cluster_info, graphs=None):
@@ -75,6 +75,11 @@ class Visualize:
             .facet(columns=cols, facet="category:N")
         )
         return chart
+    
+    def get_corr_heat_map(self, features):
+        plt.figure(figsize=(16, 6))
+        corr = self.cluster_info[features].corr()
+        return sns.heatmap(corr, xticklabels=corr.columns, yticklabels=corr.columns, vmin=-1, vmax=1, annot=True)
     
     def export_graphs_for_viz(self):
         cur = 0
