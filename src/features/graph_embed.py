@@ -5,14 +5,22 @@ import karateclub.graph_embedding as ge
 from u_graph_emb import UGraphEmb
 import os
 import EoN
+# nlp libraries
+import spacy
+from spacy.language import Language
+from spacy_langdetect import LanguageDetector
+from spacytextblob.spacytextblob import SpacyTextBlob
+from spacy.lang.en.stop_words import STOP_WORDS
+from spacy.tokens import Doc
 
 class GraphEmbed:
-    models = {"feather": ge.FeatherGraph(), "graph2vec": ge.Graph2Vec(), "ugraphemb": UGraphEmb()}
-    
     @staticmethod
     def read_graphs(graph_data):
         graphs = [nx.DiGraph(e) for e in graph_data.edges]
         return {graph_data.iloc[i].id: graphs[i] for i in np.arange(len(graph_data))}
+    
+    # available graph embedding models
+    models = {"feather": ge.FeatherGraph(), "graph2vec": ge.Graph2Vec(), "ugraphemb": UGraphEmb()}
 
     def __init__(self, 
                 f_path,
@@ -22,12 +30,14 @@ class GraphEmbed:
                 type=None, 
                 model_params=None):
 
+        # check whether or not embeddings were computed
         self.f_path = f_path
         if os.path.exists(f_path):
             self.has_embeddings = True
         else:
             self.has_embeddings = False
 
+        # configure model parameters
         if not self.has_embeddings:
             self.model = self.models[type]
             if not model_params is None:
@@ -44,6 +54,9 @@ class GraphEmbed:
         ids = list(self.graph_df.id.unique())
         ids.sort()
         self.ids = ids
+
+        #load nlp library
+        self.__load_spacy()
 
     def get_features(self):
         df = pd.DataFrame()
@@ -85,7 +98,9 @@ class GraphEmbed:
         return pd.DataFrame(all_data)
     
     def __get_article_data(self, network_info, row_data, id):
+        first_row = network_info.iloc[0]
         num_tweets = len(network_info)
+
         # retweet times
         times = network_info.tweet_created_at
         times  = pd.to_datetime(times).sort_values().to_list()
@@ -93,18 +108,25 @@ class GraphEmbed:
 
         # information types
         types = network_info.tweet_type.value_counts().to_dict()
+        
+        # article polarity and subjectivity
+        pol, sub = self.__get_article_sent(first_row.title)
 
-        row_data['canonical_url'] = network_info.iloc[0].canonical_url
-        row_data['date_published'] = network_info.iloc[0].date_published
-        row_data['domain'] = network_info.iloc[0].domain
+        # append data
+        row_data['canonical_url'] = first_row.canonical_url
+        row_data['date_published'] = first_row.date_published
+        row_data['domain'] = first_row.domain
         row_data['id'] = id
-        row_data['site_type'] = network_info.iloc[0].site_type
-        row_data['title'] = network_info.iloc[0].title
+        row_data['site_type'] = first_row.site_type
+        row_data['title'] = first_row.title
         row_data['total_time'] = time_r
         row_data['retweet_num'] = types.get("retweet", 0) / num_tweets
         row_data['quote_num'] = types.get("quote", 0) / num_tweets
         row_data['reply_num'] = types.get("reply", 0) / num_tweets
         row_data['origin_num'] = types.get("origin", 0) / num_tweets
+        row_data['article_lang'] = self.__get_article_lang(first_row.title)
+        row_data['article_pol'] = pol
+        row_data['article_subjectivity'] = sub
 
     def __get_network_data(self, graph, extra_data, network_info):
         # size
@@ -151,6 +173,30 @@ class GraphEmbed:
         extra_data['mean_in_degree'] = sum(in_deg) / len(in_deg)
         extra_data['average_time'] = extra_data['total_time'] / num_nodes
         extra_data['reproduction_num'] = R
+    
+    def __get_article_lang(self, title):
+        if title is np.NaN:
+            return np.NaN
+        doc = self.nlp(title)
+        return doc._.language['language']
+    
+    def __get_article_sent(self, title):
+        if title is np.NaN:
+            return np.NaN, np.NaN
+
+        doc = self.nlp(title)
+        pol = doc._.polarity
+        sub = doc._.subjectivity
+        return pol, sub
+
+    def __get_lang_detector(self, nlp, name):
+        return LanguageDetector()
+
+    def __load_spacy(self):
+        self.nlp = spacy.load("en_core_web_sm")
+        Language.factory("language_detector", func=self.__get_lang_detector)
+        self.nlp.add_pipe('language_detector', last=True)
+        self.nlp.add_pipe("spacytextblob")
     
     def __build_graphs(self):
         self.graphs = []
