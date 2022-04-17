@@ -11,12 +11,31 @@ class Visualize:
         self.cluster_info = cluster_info
         self.graphs = graphs
         self.X = np.array(cluster_info.graph_embedding.to_list())
-
+    
     def viz_graphs(self, ids):
-        for i in range(len(ids)):
+        viz = self.cluster_info.loc[self.cluster_info.id.isin(ids)]
+        labels = viz.label.to_list() 
+        ids = viz.id.to_list()
+        titles = viz.title.to_list()
+
+        i = 0
+        for id in ids:
             plt.figure(i)
-            nx.draw(self.graphs[ids[i]])
+            ax = plt.gca()
+            ax.set_title(titles[i])
+
+            if labels[i] == 0:
+                nx.draw(self.graphs[id], node_color="blue", ax=ax)
+            elif labels[i] == 1:
+                nx.draw(self.graphs[id], node_color="orange", ax=ax)
+            else:
+                nx.draw(self.graphs[id], node_color="red", ax=ax)
+            
+            i +=1
+
         plt.show()
+
+
     
     def get_graph(self, idx):
         id = self.cluster_info.iloc[idx].id
