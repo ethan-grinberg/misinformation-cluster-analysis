@@ -12,9 +12,8 @@ class ClusterGraphs:
     def get_clustered_df(self):
         self.graph_info_df['label'] = self.labels.to_list()
         self.graph_info_df['is_mean_vec'] = np.repeat(False, len(self.graph_info_df))
-        for l in self.labels.unique():
-            idx = self.get_mean_vec_cluster(l)
-            self.graph_info_df.at[idx, 'is_mean_vec'] = True
+        for i in self.get_closest_vec_centroid():
+            self.graph_info_df.at[i, 'is_mean_vec'] = True
         
         return self.graph_info_df
 
@@ -41,21 +40,14 @@ class ClusterGraphs:
         kmeans.fit(self.graph_vecs)
 
         self.labels = pd.Series(kmeans.labels_)
+        self.centers = kmeans.cluster_centers_
 
     def get_cluster_labels(self):
         return self.labels
     
-    def get_mean_vec_cluster(self, cluster):
-        idx = self.labels.loc[self.labels == cluster].index
-        vecs = []
-        for i in idx:
-            vecs.append(self.graph_vecs[i])
-        
-        vecs = np.array(vecs)
-        mean_vec = np.array([self.__get_mean_vec(vecs)])
-
-        index = pairwise_distances_argmin_min(mean_vec, vecs)[0][0]
-        return idx[index]
+    def get_closest_vec_centroid(self):
+       closest, _ = pairwise_distances_argmin_min(self.centers, self.graph_vecs)
+       return closest
     
     def __get_mean_vec(self, vecs):
         return vecs.mean(axis=0)
