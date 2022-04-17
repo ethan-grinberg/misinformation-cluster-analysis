@@ -4,6 +4,7 @@ import networkx as nx
 import karateclub.graph_embedding as ge
 from u_graph_emb import UGraphEmb
 import os
+import EoN
 
 class GraphEmbed:
     models = {"feather": ge.FeatherGraph(), "graph2vec": ge.Graph2Vec(), "ugraphemb": UGraphEmb()}
@@ -129,6 +130,9 @@ class GraphEmbed:
         max_in = max(in_deg)
         max_out = max(out_deg)
 
+        #epidemiology modeling
+        R = EoN.estimate_R0(graph, transmissibility=.5)
+
         # append data
         extra_data['edges'] = list(edges)
         extra_data['num_nodes'] = num_nodes
@@ -143,6 +147,7 @@ class GraphEmbed:
         extra_data['mean_out_degree'] = sum(out_deg) / len(out_deg)
         extra_data['mean_in_degree'] = sum(in_deg) / len(in_deg)
         extra_data['average_time'] = extra_data['total_time'] / num_nodes
+        extra_data['reproduction_num'] = R
     
     def __build_graphs(self):
         self.graphs = []
