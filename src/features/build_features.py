@@ -17,7 +17,7 @@ def main(proj_dir):
     all_networks = pd.read_csv(os.path.join(proj_dir, "data", "raw", "all_networks.csv"))
     p_data_file = os.path.join(proj_dir, "data", "processed", "graph_data.pkl")
 
-    GE = GraphEmbed(p_data_file, 5, all_networks, type="ugraphemb")
+    GE = GraphEmbed(p_data_file, .15, 5, all_networks, type="ugraphemb")
     embedding_df = GE.get_features()
     embedding_df.to_pickle(p_data_file)
 

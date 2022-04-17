@@ -16,6 +16,7 @@ class GraphEmbed:
 
     def __init__(self, 
                 f_path,
+                tolerance,
                 min_edges,
                 raw_networks,
                 type=None, 
@@ -34,8 +35,10 @@ class GraphEmbed:
                     self.model.__dict__[k] = v
 
         # filter out min number of edges from networks
-        self.min_edges = min_edges
-        self.graph_df = raw_networks.groupby("id").filter(lambda x: len(x) >= self.min_edges)
+        raw_networks = raw_networks.groupby("id").filter(lambda x: len(x) >= min_edges)
+        upper = raw_networks.id.value_counts().quantile(1-tolerance)
+        lower = raw_networks.id.value_counts().quantile(tolerance)
+        self.graph_df = raw_networks.groupby("id").filter(lambda x: (len(x) >= lower) & (len(x) <= upper))
         
         # set the order of ids
         ids = list(self.graph_df.id.unique())
