@@ -20,21 +20,35 @@ class Visualize:
 
         i = 0
         for id in ids:
+            g = self.graphs[id]
             plt.figure(i)
             ax = plt.gca()
             ax.set_title(titles[i])
 
             if labels[i] == 0:
-                nx.draw(self.graphs[id], node_color="blue", ax=ax)
+                nx.draw(g, node_color="blue", ax=ax, pos=nx.planar_layout(g))
             elif labels[i] == 1:
-                nx.draw(self.graphs[id], node_color="orange", ax=ax)
+                nx.draw(g, node_color="orange", ax=ax, pos=nx.planar_layout(g))
             else:
-                nx.draw(self.graphs[id], node_color="red", ax=ax)
+                nx.draw(g, node_color="red", ax=ax, pos=nx.planar_layout(g))
             
             i +=1
 
         plt.show()
 
+    def viz_type_clusters(self, variable):
+        df = self.cluster_info.copy()
+        if variable == "article_lang":
+            df = df.loc[df.article_lang != "en"].copy()
+        chart =alt.Chart(df).mark_bar(
+            cornerRadiusTopLeft=3,
+            cornerRadiusTopRight=3
+        ).encode(
+            x=alt.X(variable+":N", sort='-y'),
+            y=alt.Y('count():Q'),
+            color='label:N'
+        )
+        return chart
 
     
     def get_graph(self, idx):
