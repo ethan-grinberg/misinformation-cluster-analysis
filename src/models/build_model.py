@@ -26,8 +26,9 @@ def main(proj_dir):
 
     # export graphs with labelled clusters to file for visualization
     viz = Visualize(cluster_df)
-    graphs = viz.export_graphs_for_viz()
+    graphs, central = viz.export_graphs_for_viz()
     graphs.to_csv(os.path.join(proj_dir, "reports", "graph_edges.csv"))
+    central.to_csv(os.path.join(proj_dir, "reports", "central_edges.csv"))
 
 
 if __name__ == '__main__':

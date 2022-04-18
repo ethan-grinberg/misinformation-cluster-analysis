@@ -21,20 +21,42 @@ class Visualize:
         i = 0
         for id in ids:
             g = self.graphs[id]
-            plt.figure(i)
+            pos = self.__get_graph_layout(g)
+            t = self.__wrap_by_word(titles[i], 8)
+
+            plt.figure(i, figsize=(5,5))
             ax = plt.gca()
-            ax.set_title(titles[i])
+            ax.set_title(t, fontsize='x-large', fontweight='bold')
 
             if labels[i] == 0:
-                nx.draw(g, node_color="blue", ax=ax, pos=nx.planar_layout(g))
+                nx.draw(g, node_color="#1f77b4", ax=ax, pos=pos)
             elif labels[i] == 1:
-                nx.draw(g, node_color="orange", ax=ax, pos=nx.planar_layout(g))
+                nx.draw(g, node_color="#ff7f0e", ax=ax, pos=pos)
             else:
-                nx.draw(g, node_color="red", ax=ax, pos=nx.planar_layout(g))
+                nx.draw(g, node_color="#d62728", ax=ax, pos=pos)
             
             i +=1
 
         plt.show()
+    
+    def __get_graph_layout(self, g):
+        df = pd.DataFrame(index=g.nodes(), columns=g.nodes())
+        for row, data in nx.shortest_path_length(g):
+            for col, dist in data.items():
+                df.loc[row,col] = dist
+
+        df = df.fillna(df.max().max())
+
+        layout = nx.kamada_kawai_layout(g, dist=df.to_dict())
+        return layout
+    
+    def __wrap_by_word(self, s, n):
+        a = s.split()
+        ret = ''
+        for i in range(0, len(a), n):
+            ret += ' '.join(a[i:i+n]) + '\n'
+
+        return ret
 
     def viz_type_clusters(self, variable):
         df = self.cluster_info.copy()
@@ -120,13 +142,16 @@ class Visualize:
         for i in range(len(self.cluster_info)):
             edges = self.cluster_info.iloc[i].edges
             label = self.cluster_info.iloc[i].label
+            mean = self.cluster_info.iloc[i].is_mean_vec
             arr = np.array(edges)
             for i in range(arr.max() + 1):
                 arr = np.where(arr == i, cur, arr)
                 cur += 1
             df = pd.DataFrame(arr, columns=['source', 'target'])
             df['label'] = label
+            df['is_mean_vec'] = mean
             dfs.append(df)
         
         all_edges = pd.concat(dfs)
-        return all_edges
+        central_edges = all_edges.loc[all_edges.is_mean_vec == True]
+        return all_edges, central_edges
