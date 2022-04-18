@@ -88,3 +88,15 @@ target/
 .mypy_cache/
 reports/figures/misinfo_viz.jpg
 reports/figures/misinfo_viz.svg
+reports/poster/ug_symposium_poster_2022.indt
+
+data/external/all_claim_reviews.csv
+data/external/all_countries.csv
+data/external/all_keywords.csv
+data/external/all_languages.csv
+data/external/all_news_articles.csv
+data/external/all_organisations.csv
+data/external/claims_w_sent.csv
+data/external/claims.json
+data/external/combined_claims.pkl
+
