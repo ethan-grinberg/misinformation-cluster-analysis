@@ -136,12 +136,8 @@ class GraphEmbed:
         num_edges = len(edges)
 
         # components
-        scc = list(nx.strongly_connected_components(graph))
         wcc = [c for c in sorted(nx.weakly_connected_components(graph), key=len, reverse=True)]
-        
-        num_scc = len(scc)
         num_wcc = len(wcc)
-        largest_scc = max([len(comp) for comp in scc])
         largest_wcc = len(wcc[0])
 
         # distance
@@ -162,13 +158,11 @@ class GraphEmbed:
         extra_data['edges'] = list(edges)
         extra_data['num_nodes'] = num_nodes
         extra_data['num_edges'] = num_edges
-        extra_data['num_scc'] = num_scc / num_nodes
-        extra_data['num_wcc'] = num_wcc / num_nodes
-        extra_data['largest_scc'] = largest_scc / num_nodes
+        extra_data['num_wcc'] = num_wcc
         extra_data['largest_wcc'] = largest_wcc / num_nodes
         extra_data['diameter_largest_wcc'] = largest_di
-        extra_data['max_out_degree'] = max_out / num_nodes
-        extra_data['max_in_degree'] = max_in / num_nodes
+        extra_data['max_out_degree'] = max_out
+        extra_data['max_in_degree'] = max_in
         extra_data['mean_out_degree'] = sum(out_deg) / len(out_deg)
         extra_data['mean_in_degree'] = sum(in_deg) / len(in_deg)
         extra_data['average_time'] = extra_data['total_time'] / num_nodes
