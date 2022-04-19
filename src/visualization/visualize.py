@@ -7,6 +7,22 @@ from sklearn.manifold import TSNE
 import seaborn as sns
 
 class Visualize:
+    @staticmethod
+    def get_super(x):
+        normal = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-=()"
+        super_s = "ᴬᴮᶜᴰᴱᶠᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾQᴿˢᵀᵁⱽᵂˣʸᶻᵃᵇᶜᵈᵉᶠᵍʰᶦʲᵏˡᵐⁿᵒᵖ۹ʳˢᵗᵘᵛʷˣʸᶻ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾"
+        res = x.maketrans(''.join(normal), ''.join(super_s))
+        return x.translate(res)
+    
+    @staticmethod
+    def wrap_by_word(s, n):
+        a = s.split()
+        ret = ''
+        for i in range(0, len(a), n):
+            ret += ' '.join(a[i:i+n]) + '\n'
+
+        return ret
+
     def __init__(self, cluster_info, graphs=None):
         self.cluster_info = cluster_info
         self.graphs = graphs
@@ -22,7 +38,7 @@ class Visualize:
         for id in ids:
             g = self.graphs[id]
             pos = self.__get_graph_layout(g)
-            t = self.__wrap_by_word(titles[i], 8)
+            t = self.wrap_by_word(titles[i], 8)
 
             plt.figure(i, figsize=(5,5))
             ax = plt.gca()
@@ -49,14 +65,6 @@ class Visualize:
 
         layout = nx.kamada_kawai_layout(g, dist=df.to_dict())
         return layout
-    
-    def __wrap_by_word(self, s, n):
-        a = s.split()
-        ret = ''
-        for i in range(0, len(a), n):
-            ret += ' '.join(a[i:i+n]) + '\n'
-
-        return ret
 
     def viz_type_clusters(self, variable):
         df = self.cluster_info.copy()
@@ -109,10 +117,15 @@ class Visualize:
 
         return chart
 
-    def graph_point_range_cluster_info(self, y_vals, width, height, cols):
+    def graph_point_range_cluster_info(self, rename, y_vals, width, height, cols):
+        clust = self.cluster_info.copy()
+        if rename:
+            clust.rename(columns=y_vals, inplace=True)
+            y_vals = list(y_vals.values())
+
         points = (
             alt.Chart()
-            .mark_point(size=70)
+            .mark_circle(size=200)
             .transform_fold(fold=y_vals, as_=["category", "y"])
             .encode(x="label:N", y=alt.Y("mean(y):Q"), color="label:N")
         )
@@ -121,14 +134,22 @@ class Visualize:
             alt.Chart()
             .mark_errorbar(extent="ci")
             .transform_fold(fold=y_vals, as_=["category", "y"])
-            .encode(x="label:N", y="mean(y):Q", color="label:N")
+            .encode(x="label:N", y=alt.Y("mean(y):Q"), color="label:N", strokeWidth=alt.value(2))
         )
 
         chart = (
-            alt.layer(points, point_range, data=self.cluster_info)
+            alt.layer(points, point_range, data=clust)
             .properties(width=width, height=height)
             .facet(columns=cols, facet="category:N")
         )
+        
+        chart = self.__configure_alt_chart(chart)
+        return chart
+    
+    def __configure_alt_chart(self, chart):
+        chart = chart.configure_header(title=None, labelFontSize=25, labelFontWeight='bold')
+        chart = chart.configure_legend(titleFontSize=25, labelFontSize=20, labelFontWeight='bold', titleFontWeight='bold')
+        chart = chart.configure_axis(title=None, labelFontSize=15, labelAngle=0)
         return chart
     
     def get_corr_heat_map(self, features):
