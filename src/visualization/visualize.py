@@ -85,21 +85,26 @@ class Visualize:
         id = self.cluster_info.iloc[idx].id
         return self.graphs[id]
 
-    def graph_reduced_dimensions(self, tooltip_data):
+    def graph_reduced_dimensions(self, tooltip_data, width, height, title):
         tsne = TSNE(2)
         two_d = tsne.fit_transform(self.X)
 
-        components = pd.DataFrame(two_d, columns=['dim1', 'dim2'])
+        components = pd.DataFrame(two_d, columns=['dimension 1', 'dimension 2'])
         components['label'] = self.cluster_info.label
         for col in tooltip_data:
             components[col] = self.cluster_info[col]
         
         chart = alt.Chart(components).mark_circle(size=60).encode(
-                    x='dim1',
-                    y='dim2',
+                    x='dimension 1',
+                    y='dimension 2',
                     color='label:N',
                     tooltip=tooltip_data
-                ).interactive()
+                ).properties(title=title, width=width, height=height).interactive()
+        
+        chart = chart.configure_title(fontSize=25, fontWeight='bold')
+        chart = chart.configure_header(titleFontSize=25, titleFontWeight='bold')
+        chart = chart.configure_legend(titleFontSize=25, labelFontSize=20, labelFontWeight='bold', titleFontWeight='bold')
+        chart = chart.configure_axis(grid=False, titleFontSize=20, labelFontSize=15, labelAngle=0)
 
         return chart
     
@@ -142,7 +147,7 @@ class Visualize:
             .properties(width=width, height=height)
             .facet(columns=cols, facet="category:N")
         )
-        
+
         chart = self.__configure_alt_chart(chart)
         return chart
     
