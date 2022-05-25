@@ -99,6 +99,7 @@ data/external/all_organisations.csv
 data/external/claims_w_sent.csv
 data/external/claims.json
 data/external/combined_claims.pkl
+data/external/FibVID-main
 
 reports/poster/~ug_symposium_poste~otsxky.idlk
 reports/poster/ug_symposium_poster_2022.indd
