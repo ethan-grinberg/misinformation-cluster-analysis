@@ -144,6 +144,7 @@ class GraphEmbed:
         H = graph.subgraph(wcc[0])
         H = H.to_undirected()
         largest_di = nx.diameter(H)
+        w_index = nx.wiener_index(H)
 
         #degree
         out_deg = [deg[1] for deg in graph.out_degree()]
@@ -167,6 +168,7 @@ class GraphEmbed:
         extra_data['mean_in_degree'] = sum(in_deg) / len(in_deg)
         extra_data['average_time'] = extra_data['total_time'] / num_nodes
         extra_data['reproduction_num'] = R
+        extra_data['wiener_index'] = w_index / num_nodes
     
     def __get_article_lang(self, title):
         if title is np.NaN:
