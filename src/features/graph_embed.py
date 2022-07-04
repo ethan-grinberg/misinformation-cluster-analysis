@@ -1,3 +1,4 @@
+from matplotlib.pyplot import title
 import pandas as pd
 import numpy as np
 import networkx as nx
@@ -5,6 +6,7 @@ import karateclub.graph_embedding as ge
 from u_graph_emb import UGraphEmb
 import os
 import EoN
+
 # nlp libraries
 import spacy
 from spacy.language import Language
@@ -12,6 +14,7 @@ from spacy_langdetect import LanguageDetector
 from spacytextblob.spacytextblob import SpacyTextBlob
 from spacy.lang.en.stop_words import STOP_WORDS
 from spacy.tokens import Doc
+from emfdscore.scoring import score_docs
 
 class GraphEmbed:
     @staticmethod
@@ -84,12 +87,18 @@ class GraphEmbed:
     def __get_extra_features(self):
         all_data = []
         i = 0
+
+        # get moral language scores
+        moral_scores = self.__get_moral_scores() 
+
         for id in self.ids:
             g = self.graphs[i]
             network_info = self.graph_df.loc[self.graph_df.id == id]
 
+            moral_info = moral_scores.iloc[i]
+
             row_data = {}
-            self.__get_article_data(network_info, row_data, id)
+            self.__get_article_data(network_info, row_data, id, moral_info)
             self.__get_network_data(g, row_data, network_info)
             all_data.append(row_data)
 
@@ -97,7 +106,7 @@ class GraphEmbed:
         
         return pd.DataFrame(all_data)
     
-    def __get_article_data(self, network_info, row_data, id):
+    def __get_article_data(self, network_info, row_data, id, moral_info):
         first_row = network_info.iloc[0]
         num_tweets = len(network_info)
 
@@ -127,6 +136,11 @@ class GraphEmbed:
         row_data['article_lang'] = self.__get_article_lang(first_row.title)
         row_data['article_pol'] = pol
         row_data['article_subjectivity'] = sub
+        row_data['care_sent'] = moral_info.care_sent
+        row_data['fairness_sent'] = moral_info.fairness_sent
+        row_data['loyalty_sent'] = moral_info.loyalty_sent
+        row_data['authority_sent'] = moral_info.authority_sent
+        row_data['sanctity_sent'] = moral_info.sanctity_sent
 
     def __get_network_data(self, graph, extra_data, network_info):
         # size
@@ -169,6 +183,38 @@ class GraphEmbed:
         extra_data['average_time'] = extra_data['total_time'] / num_nodes
         extra_data['reproduction_num'] = R
         extra_data['wiener_index'] = w_index / num_nodes
+
+    def __get_moral_scores(self):
+        title_df = self.graph_df.copy()
+
+        title_df = title_df.sort_values(by="id")
+        title_df = title_df.groupby("id").apply(lambda df : df.iloc[0])
+        title_df = title_df.drop("id", axis=1)
+        title_df.reset_index(inplace=True)
+        title_df['title'] = title_df.title.fillna(" ")
+
+        title_df = title_df.loc[:, ['title', 'id']]
+        title_df.rename(columns={'title': 0}, inplace=True)
+
+        scores = score_docs(
+            title_df,
+            "emfd",
+            "all",
+            "bow",
+            "sentiment",
+            len(title_df),
+        )
+        scores =  scores.loc[
+            :,
+            [
+                "care_sent",
+                "fairness_sent",
+                "loyalty_sent",
+                "authority_sent",
+                "sanctity_sent"
+            ],
+        ]
+        return scores
     
     def __get_article_lang(self, title):
         if title is np.NaN:
