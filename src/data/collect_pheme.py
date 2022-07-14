@@ -74,7 +74,7 @@ class Tweets:
             "event" : lambda obj : obj.get("event"),
             "tweet_id" : lambda obj : obj.get("id"),
             "is_source_tweet" : lambda obj : 1 if twt["is_src"] else 0,
-            "in_reply_user" : lambda obj : obj.get("in_reply_to_user_id"),
+            "in_reply_user" : lambda obj : int(obj.get("in_reply_to_user_id")),
             "user_id" : lambda obj : obj["user"].get("id"),
             
             # Tweet metadata
