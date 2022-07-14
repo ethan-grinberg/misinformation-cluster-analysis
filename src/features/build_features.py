@@ -5,21 +5,26 @@ from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
 import pandas as pd
 from graph_embed import GraphEmbed
+import sys
 
 
-def main(proj_dir):
+def main(proj_dir, pheme):
     """ Runs data processing scripts to turn raw data from (../raw) into
         cleaned data ready to be analyzed (saved in ../processed).
     """
     logger = logging.getLogger(__name__)
     logger.info('extracting features from graphs')
 
-    all_networks = pd.read_csv(os.path.join(proj_dir, "data", "raw", "all_networks.csv"))
-    p_data_file = os.path.join(proj_dir, "data", "processed", "graph_data.pkl")
+    if pheme == False:
+        all_networks = pd.read_csv(os.path.join(proj_dir, "data", "raw", "all_networks.csv"))
+        p_data_file = os.path.join(proj_dir, "data", "processed", "graph_data.pkl")
 
-    GE = GraphEmbed(p_data_file, .15, 5, all_networks, type="ugraphemb")
-    embedding_df = GE.get_features()
-    embedding_df.to_pickle(p_data_file)
+        GE = GraphEmbed(p_data_file, .15, 5, all_networks, type="ugraphemb")
+
+        embedding_df = GE.get_features()
+        embedding_df.to_pickle(p_data_file)
+    else:
+        pass
 
 if __name__ == '__main__':
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -27,5 +32,7 @@ if __name__ == '__main__':
 
     project_dir = Path(__file__).resolve().parents[2]
 
+    pheme = sys.argv[1]
+    
     load_dotenv(find_dotenv())
-    main(project_dir)
+    main(project_dir, pheme)
