@@ -6,7 +6,7 @@ import numpy as np
 from sys import argv
 import string
 import time
-from .util import to_unix_tmsp, parse_twitter_datetime
+from util import to_unix_tmsp, parse_twitter_datetime
 from functools import reduce
 import networkx as nx
 
@@ -292,7 +292,7 @@ def pheme_to_csv(event, dataset, output, Parser=Tweets):
     for category in os.listdir("%s/%s" % (dataset, event)):
         if category.startswith("."):
             continue
-        print('event:',event,'category:',category,category=='rumours')
+        print('event:',event,'category:',category)
         for thread in os.listdir("%s/%s/%s" % (dataset, event, category)):
             if thread.startswith("."):
                 continue

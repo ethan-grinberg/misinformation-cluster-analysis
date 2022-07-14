@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-from curses import raw
 import os
 import logging
 from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
 from collect_hoaxy import HoaxyApi
-from make_dataset import collect_tweets_thread_data
+from collect_pheme import collect_tweets_thread_data
 import pandas as pd
 import sys
 
@@ -20,6 +19,7 @@ def main(proj_dir, hoaxy):
 
     ext_data = os.path.join(proj_dir, "data", "external")
     raw_data = os.path.join(proj_dir, "data", "raw")
+
     if hoaxy == True:
         # iffy list that hoaxy uses
         iffy_list = pd.read_csv(os.path.join(ext_data, "iffy+.csv"))
