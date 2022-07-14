@@ -3,12 +3,10 @@
 import os, json, errno
 import pandas as pd
 import numpy as np
-from sys import argv
 import string
 import time
 from util import to_unix_tmsp, parse_twitter_datetime
 from functools import reduce
-import networkx as nx
 
 
 #imports for text feature extraction:
@@ -27,15 +25,6 @@ class Tweets:
         self.data = {}
         self.output_dir = output_dir
         self.printable = set(string.printable)
-
-        utc_offset = {
-            "germanwings-crash": 1,
-            "sydneysiege": 11,
-            "ottawashooting": -4,
-            "ferguson":-5,
-            "charliehebdo":+1,
-        }
-        self.utc_offset = utc_offset[self.event]
     
     def append(self, twt, cat, thrd, is_src):
         """ Convert tweet metadata into features.
@@ -63,11 +52,6 @@ class Tweets:
         #print('twt text:',twt_text_filtered)
         #print('type of twt_text', type(twt_text_filtered))
         text_features=self.tweettext2features(twt_text_filtered)
-        
-        def get_utc_dist(obj):
-            offset = obj["user"].get("utc_offset")
-            conversion = 3600
-            return abs(self.utc_offset - offset / conversion) if offset else None
 
         has_question = "?" in twt["text"]
         has_exclaim = "!" in twt["text"]
@@ -122,8 +106,7 @@ class Tweets:
             "user.created_at": lambda obj: self.datestr_to_tmsp(obj["user"].get("created_at")),
             "user.location": lambda obj: 1 if obj["user"].get("location") else 0,
             "user.profile_sbcolor": lambda obj: int(obj["user"].get("profile_sidebar_border_color"), 16),
-            "user.profile_bgcolor": lambda obj: int(obj["user"].get("profile_background_color"), 16),
-            "user.utc_dist": get_utc_dist,
+            "user.profile_bgcolor": lambda obj: int(obj["user"].get("profile_background_color"), 16)
         }
 
         for col in features:
@@ -357,19 +340,6 @@ def agg_tweets_by_thread(df):
     rename = {
         "tweet_id": "thread_length"
     }
-
-    def g(x):
-        # Add size of largest user-to-user conversation component in each thread        
-        d = []
-        thread_tweets = list(x["tweet_id"])
-        G = nx.from_pandas_edgelist(df[df.tweet_id.isin(thread_tweets)], "user_id", "in_reply_user")
-        Gc = max(nx.connected_component_subgraphs(G), key=len)
-        d.append(nx.number_connected_components(G))
-        d.append(nx.diameter(Gc))
-        return pd.Series(d, index=["component_count", "largest_cc_diameter"])
-    
-    # Step 0: Build graph-based features
-    graph = df.groupby("thread").apply(g)
     
     # Step 1: Build simple aggregate features
     agg = df.groupby("thread")\
@@ -408,7 +378,7 @@ def agg_tweets_by_thread(df):
         .groupby("thread") \
         .apply(f)
     
-    dfs = [agg, src, replies, graph]
+    dfs = [agg, src, replies]
     thrd_data = reduce(lambda left, right: pd.merge(left,right, on="thread"), dfs)
     
     # Step 3: Add miscelaneous features
