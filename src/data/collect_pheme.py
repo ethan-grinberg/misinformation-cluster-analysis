@@ -26,7 +26,7 @@ class Tweets:
         self.output_dir = output_dir
         self.printable = set(string.printable)
     
-    def append(self, twt, cat, thrd, is_src):
+    def append(self, twt, cat, thrd, is_src, annotation):
         """ Convert tweet metadata into features.
 
         Key to the `self.data` dictionary defined in this function define columns in
@@ -38,6 +38,10 @@ class Tweets:
             - thrd: The thread id of the tweet
             - is_src : True if it's a source tweet and false if it is a reaction
         """
+        # Annotation metadata
+        twt['truth'] = self.compute_veracity(annotation)
+        twt['title'] = annotation.get('category', np.NaN)
+
         twt['category'] = cat
         twt["thread"] = thrd
         twt["event"] = self.event
@@ -57,6 +61,10 @@ class Tweets:
         has_exclaim = "!" in twt["text"]
 
         features = {
+            #annotation metadata
+            'truth': lambda obj: obj['truth'],
+            'title': lambda obj: obj['title'],
+            
             # Thread metadata
             "is_rumor": lambda obj : 1 if obj['category'] == "rumours" else 0,
             
@@ -114,6 +122,46 @@ class Tweets:
 
         for col in text_features:
             self.data.setdefault(col, []).append(text_features[col])
+    
+    def compute_veracity(self, annotation, string = True):
+        if 'misinformation' in annotation.keys() and 'true'in annotation.keys():
+            if int(annotation['misinformation'])==0 and int(annotation['true'])==0:
+                if string:
+                    label = "unverified"
+                else:
+                    label = 2
+            elif int(annotation['misinformation'])==0 and int(annotation['true'])==1 :
+                if string:
+                    label = "true"
+                else:
+                    label = 1
+            elif int(annotation['misinformation'])==1 and int(annotation['true'])==0 :
+                if string:
+                    label = "false"
+                else:
+                    label = 0
+            elif int(annotation['misinformation'])==1 and int(annotation['true'])==1:
+                label = None
+                
+        elif 'misinformation' in annotation.keys() and 'true' not in annotation.keys():
+            # all instances have misinfo label but don't have true label
+            if int(annotation['misinformation'])==0:
+                if string:
+                    label = "unverified"
+                else:
+                    label = 2
+            elif int(annotation['misinformation'])==1:
+                if string:
+                    label = "false"
+                else:
+                    label = 0
+                    
+        elif 'true' in annotation.keys() and 'misinformation' not in annotation.keys():
+            label = None
+        else:
+            label = None
+            
+        return label
 
     def tweettext2features(self, tweet_text):   
         """ Extracts some text features from the text of each tweet. The extracted features are as follows:
@@ -275,20 +323,32 @@ def pheme_to_csv(event, dataset, output, Parser=Tweets):
     for category in os.listdir("%s/%s" % (dataset, event)):
         if category.startswith("."):
             continue
+
         print('event:',event,'category:',category)
+
         for thread in os.listdir("%s/%s/%s" % (dataset, event, category)):
             if thread.startswith("."):
                 continue
+
             with open("%s/%s/%s/%s/source-tweets/%s.json" % (dataset, event, category, thread, thread)) as f:
                 tweet = json.load(f)
-            data.append(tweet, category, thread, True)
+
+            # get annotation
+            with open("%s/%s/%s/%s/annotation.json" % (dataset, event, category, thread)) as f:
+                annotation = json.load(f)
+            
+            data.append(tweet, category, thread, True, annotation)
+
             thread_number += 1
             for reaction in os.listdir("%s/%s/%s/%s/reactions" % (dataset, event, category, thread)):
                 if reaction.startswith("."):
                     continue
+
                 with open("%s/%s/%s/%s/reactions/%s" % (dataset, event, category, thread, reaction)) as f:
                     tweet = json.load(f)
-                data.append(tweet, category, thread, False)
+                
+                data.append(tweet, category, thread, False, annotation)
+
     fn, df = data.export()
     print("%s was generated in %s minutes" % (fn, (time.time() - start) / 60))
     return df
