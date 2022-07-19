@@ -84,18 +84,15 @@ class GraphEmbed:
     
     def __get_extra_features(self):
         all_data = []
-        i = 0
 
         for id in self.ids:
-            g = self.graphs[i]
+            g = self.graphs[id]
             network_info = self.graph_df.loc[self.graph_df.id == id]
 
             row_data = {}
             self.data_model.get_meta_data(network_info, row_data, id)
             self.data_model.get_network_data(g, row_data)
             all_data.append(row_data)
-
-            i += 1
         
         return pd.DataFrame(all_data)        
 

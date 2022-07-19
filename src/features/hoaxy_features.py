@@ -100,13 +100,13 @@ class HoaxyFeatures(DataModel):
         extra_data['wiener_index'] = w_index / num_nodes
 
     def build_graphs(self, ids, graph_df):
-        graphs = []
+        graphs = {}
         for id in ids:
             network = graph_df.loc[graph_df.id == id]
             
             # append to list of graphs
             g = self.__build_graph(network)
-            graphs.append(g)
+            graphs[id] = g
         return graphs
 
     def __build_graph(self, network):
