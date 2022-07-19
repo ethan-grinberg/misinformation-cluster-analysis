@@ -59,7 +59,7 @@ class GraphEmbed:
     def get_features(self):
         df = pd.DataFrame()
 
-        # get all networks as nx objects
+        # get all networks as nx objects dictionary
         self.graphs = self.data_model.build_graphs(self.ids, self.graph_df)
 
         if not self.has_embeddings:
@@ -97,7 +97,7 @@ class GraphEmbed:
         return pd.DataFrame(all_data)        
 
     def __fit(self):
-        self.model.fit(self.graphs)
+        self.model.fit(list(self.graphs.values()))
     
     def __get_embedding(self):
         return self.model.get_embedding()
