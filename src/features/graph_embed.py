@@ -6,6 +6,8 @@ import karateclub.graph_embedding as ge
 from u_graph_emb import UGraphEmb
 import os
 import EoN
+from hoaxy_features import HoaxyFeatures
+from pheme_features import PhemeFeatures
 
 # nlp libraries
 import spacy
@@ -26,16 +28,19 @@ class GraphEmbed:
     models = {"feather": ge.FeatherGraph(), "graph2vec": ge.Graph2Vec(), "ugraphemb": UGraphEmb()}
 
     def __init__(self, 
-                f_path,
+                processed_data,
                 tolerance,
                 min_edges,
-                raw_networks,
+                raw_data,
+                is_pheme,
                 type=None, 
                 model_params=None):
+        
+        self.is_pheme = is_pheme
 
         # check whether or not embeddings were computed
-        self.f_path = f_path
-        if os.path.exists(f_path):
+        self.processed_data = processed_data
+        if os.path.exists(processed_data):
             self.has_embeddings = True
         else:
             self.has_embeddings = False
@@ -46,12 +51,13 @@ class GraphEmbed:
             if not model_params is None:
                 for k, v in model_params.items():
                     self.model.__dict__[k] = v
+        
+        self.data_model = HoaxyFeatures()
+        if self.is_pheme:
+            self.data_model = PhemeFeatures()
 
         # filter out min number of edges from networks
-        raw_networks = raw_networks.groupby("id").filter(lambda x: len(x) >= min_edges)
-        upper = raw_networks.id.value_counts().quantile(1-tolerance)
-        lower = raw_networks.id.value_counts().quantile(tolerance)
-        self.graph_df = raw_networks.groupby("id").filter(lambda x: (len(x) >= lower) & (len(x) <= upper))
+        self.graph_df = self.data_model.filter_data(raw_data, tolerance, min_edges)
         
         # set the order of ids
         ids = list(self.graph_df.id.unique())
@@ -69,7 +75,7 @@ class GraphEmbed:
             embeddings = self.__get_embedding().tolist()
             df['graph_embedding'] = embeddings
         else:
-            df = pd.read_pickle(self.f_path)
+            df = pd.read_pickle(self.processed_data)
             old_ids = df.id.to_list()
             df = pd.DataFrame(df.graph_embedding)
 
@@ -142,7 +148,7 @@ class GraphEmbed:
         row_data['authority_sent'] = moral_info.authority_sent
         row_data['sanctity_sent'] = moral_info.sanctity_sent
 
-    def __get_network_data(self, graph, extra_data, network_info):
+    def __get_network_data(self, graph, extra_data):
         # size
         edges = graph.edges
         nodes = graph.nodes
@@ -246,10 +252,10 @@ class GraphEmbed:
             network = self.graph_df.loc[self.graph_df.id == id]
             
             # append to list of graphs
-            g = self.__create_graph(network)
+            g = self.__build_graph(network)
             self.graphs.append(g)
 
-    def __create_graph(self, network):
+    def __build_graph(self, network):
         edges = list(zip(network.from_user_id, network.to_user_id))
         g = nx.DiGraph()
         g.add_edges_from(edges)

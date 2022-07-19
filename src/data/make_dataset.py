@@ -10,7 +10,7 @@ import sys
 
 
 # either make the dataset from the hoaxy api or scrape from eu vs disinfo and twitter
-def main(proj_dir, hoaxy):
+def main(proj_dir, hoaxy=False):
     """ Runs data processing scripts to turn raw data from (../raw) into
         cleaned data ready to be analyzed (saved in ../processed).
     """
@@ -40,7 +40,5 @@ if __name__ == '__main__':
 
     project_dir = Path(__file__).resolve().parents[2]
 
-    hoaxy = sys.argv[1]
-
     load_dotenv(find_dotenv())
-    main(project_dir, hoaxy)
+    main(project_dir)
