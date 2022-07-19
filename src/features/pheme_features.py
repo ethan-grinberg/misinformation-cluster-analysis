@@ -21,3 +21,5 @@ class PhemeFeatures(DataModel):
         pass
     def get_network_data(self, graph, extra_data):
         pass
+    def build_graphs(self, ids, graph_df):
+        pass
