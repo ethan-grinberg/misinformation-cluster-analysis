@@ -17,7 +17,7 @@ class PhemeFeatures(DataModel):
         
         return graph_df
 
-    def get_meta_data(self, raw_data, row_data, id, moral_info):
+    def get_meta_data(self, raw_data, row_data, id):
         pass
     def get_network_data(self, graph, extra_data):
         pass

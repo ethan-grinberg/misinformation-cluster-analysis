@@ -6,8 +6,11 @@ class DataModel(ABC):
     def filter_data(self, raw_data, tolerance, min_edges):
         pass
     @abstractmethod
-    def get_meta_data(self, raw_data, row_data, id, moral_info):
+    def get_meta_data(self, raw_data, row_data, id):
         pass
     @abstractmethod
     def get_network_data(self, graph, extra_data):
+        pass
+    @abstractmethod
+    def build_graphs(self):
         pass

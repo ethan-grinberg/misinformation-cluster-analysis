@@ -10,9 +10,11 @@ class HoaxyFeatures(DataModel):
         upper = grouped_data.id.value_counts().quantile(1-tolerance)
         lower = grouped_data.id.value_counts().quantile(tolerance)
         graph_df = grouped_data.groupby("id").filter(lambda x: (len(x) >= lower) & (len(x) <= upper))
-        
+
         return graph_df
-    def get_meta_data(self, raw_data, row_data, id, moral_info):
+    def get_meta_data(self, raw_data, row_data, id):
         pass
     def get_network_data(self, graph, extra_data):
+        pass
+    def build_graphs(self):
         pass
