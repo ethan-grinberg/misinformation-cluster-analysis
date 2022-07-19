@@ -15,19 +15,18 @@ class GraphEmbed:
         return {graph_data.iloc[i].id: graphs[i] for i in np.arange(len(graph_data))}
     
     # available graph embedding models
-    models = {"feather": ge.FeatherGraph(), "graph2vec": ge.Graph2Vec(), "ugraphemb": UGraphEmb()}
+    emb_models = {"feather": ge.FeatherGraph(), "graph2vec": ge.Graph2Vec(), "ugraphemb": UGraphEmb()}
+    data_models = {"pheme": PhemeFeatures(), "hoaxy": HoaxyFeatures()}
 
     def __init__(self, 
                 processed_data,
                 tolerance,
                 min_edges,
                 raw_data,
-                is_pheme,
-                type=None, 
+                data_model,
+                emb_model=None, 
                 model_params=None):
         
-        self.is_pheme = is_pheme
-
         # check whether or not embeddings were computed
         self.processed_data = processed_data
         if os.path.exists(processed_data):
@@ -37,16 +36,13 @@ class GraphEmbed:
 
         # configure model parameters
         if not self.has_embeddings:
-            self.model = self.models[type]
+            self.model = self.emb_models[emb_model]
             if not model_params is None:
                 for k, v in model_params.items():
                     self.model.__dict__[k] = v
         
-        if self.is_pheme:
-            self.data_model = PhemeFeatures()
-        else:
-            self.data_model = HoaxyFeatures()
-
+        # set up data model for extracting features
+        self.data_model = self.data_models[data_model]
 
         # filter out min number of edges from networks
         self.graph_df = self.data_model.filter_data(raw_data, tolerance, min_edges)

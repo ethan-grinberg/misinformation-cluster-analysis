@@ -6,6 +6,7 @@ from data_model import DataModel
 class PhemeFeatures(DataModel):
     def __init__(self):
         pass
+
     def filter_data(self, raw_data, tolerance, min_edges):
         #rename thread to be consistent in code
         grouped_data = raw_data.rename({'thread', 'id'}, axis=1)
@@ -19,6 +20,7 @@ class PhemeFeatures(DataModel):
 
     def get_meta_data(self, raw_data, row_data, id):
         pass
+    
     def get_network_data(self, graph, extra_data):
         pass
     def build_graphs(self, ids, graph_df):
