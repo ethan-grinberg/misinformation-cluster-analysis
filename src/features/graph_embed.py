@@ -1,4 +1,3 @@
-from matplotlib.pyplot import title
 import pandas as pd
 import numpy as np
 import networkx as nx
@@ -93,7 +92,8 @@ class GraphEmbed:
         return pd.DataFrame(all_data)        
 
     def __fit(self):
-        self.model.fit(list(self.graphs.values()))
+        X = [self.graphs[i] for i in self.ids]
+        self.model.fit(X)
     
     def __get_embedding(self):
         return self.model.get_embedding()
