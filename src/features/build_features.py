@@ -8,7 +8,7 @@ from graph_embed import GraphEmbed
 import sys
 
 
-def main(proj_dir, pheme=False):
+def main(proj_dir, pheme=True):
     """ Runs data processing scripts to turn raw data from (../raw) into
         cleaned data ready to be analyzed (saved in ../processed).
     """
@@ -20,7 +20,7 @@ def main(proj_dir, pheme=False):
         p_data_file = os.path.join(proj_dir, "data", "processed", "graph_data.pkl")
         data_model = "hoaxy"
     else:
-        raw_data = pd.read_csv(os.path.join(proj_dir, "data", "raw", "pheme_data.csv"))
+        raw_data = pd.read_csv(os.path.join(proj_dir, "data", "raw", "pheme", "pheme_all_events.csv"))
         p_data_file = os.path.join(proj_dir, "data", "processed", "graph_data_pheme.pkl")
         data_model = "pheme"
 
