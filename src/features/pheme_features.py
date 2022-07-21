@@ -2,6 +2,7 @@ import pandas as pd
 from data_model import DataModel
 from functools import reduce
 import numpy as np
+import networkx as nx
 
 
 class PhemeFeatures(DataModel):
@@ -23,12 +24,42 @@ class PhemeFeatures(DataModel):
         return graph_df.reset_index(drop=True)
 
     def get_meta_data(self, raw_data, row_data, id):
-        pass
+        first_row = raw_data.iloc[0]
+
+        row_data['id'] = id
+        row_data['truth'] = first_row.truth
+        row_data['title'] = first_row.title
+        row_data['event'] = first_row.event
     
     def get_network_data(self, graph, extra_data):
-        pass
+        edges = graph.edges
+        nodes = graph.nodes
+        num_nodes = len(nodes)
+        num_edges = len(edges)
+
+        # append data
+        extra_data['edges'] = list(edges)
+        extra_data['num_nodes'] = num_nodes
+        extra_data['num_edges'] = num_edges
+
     def build_graphs(self, ids, graph_df):
-        pass
+        graphs = {}
+        for id in ids:
+            net = graph_df.loc[(graph_df.id == id) & (graph_df.is_source_tweet != 1)]
+            g = self._build_graph(net)
+            graphs[id] = g
+        return graphs
+    
+    def _build_graph(self, net):
+        g = nx.from_pandas_edgelist(net, "user_id", "in_reply_user", create_using=nx.DiGraph)
+        relabled_g = nx.convert_node_labels_to_integers(g)
+
+        # add out degree centrality attribute to nodes
+        centrality = nx.out_degree_centrality(relabled_g)
+        centrality = {key:[value] for (key,value) in centrality.items()}
+        nx.set_node_attributes(relabled_g, centrality, "out-degree")
+
+        return relabled_g
 
     def agg_tweets_by_thread(df):
     
