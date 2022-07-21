@@ -10,14 +10,17 @@ class PhemeFeatures(DataModel):
 
     def filter_data(self, raw_data, tolerance, min_edges):
         #rename thread to be consistent in code
-        grouped_data = raw_data.rename({'thread', 'id'}, axis=1)
+        grouped_data = raw_data.rename(columns={'thread': 'id'})
 
-        grouped_data = raw_data.groupby("id").filter(lambda x: len(x) >= min_edges)
+        # truth value of non-rumors is non-rumor
+        grouped_data['truth'] = grouped_data['truth'].fillna('non-rumor')
+
+        grouped_data = grouped_data.groupby("id").filter(lambda x: len(x) >= min_edges)
         upper = grouped_data.id.value_counts().quantile(1-tolerance)
         lower = grouped_data.id.value_counts().quantile(tolerance)
         graph_df = grouped_data.groupby("id").filter(lambda x: (len(x) >= lower) & (len(x) <= upper))
         
-        return graph_df
+        return graph_df.reset_index(drop=True)
 
     def get_meta_data(self, raw_data, row_data, id):
         pass
