@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
 from collect_hoaxy import HoaxyApi
-from collect_pheme import collect_tweets_thread_data
+from collect_pheme import collect_all_events
 import pandas as pd
 import sys
 
@@ -32,7 +32,7 @@ def main(proj_dir, hoaxy=False):
     else:
         data_dir = os.path.join(ext_data, "pheme-rnr-dataset")
         output_dir = os.path.join(raw_data, "pheme")
-        collect_tweets_thread_data(data_dir, output_dir, "pheme_all_events")
+        collect_all_events(data_dir, output_dir, "pheme_all_events")
 
 if __name__ == '__main__':
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'

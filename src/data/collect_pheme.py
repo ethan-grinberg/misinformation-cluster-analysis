@@ -74,7 +74,7 @@ class Tweets:
             "event" : lambda obj : obj.get("event"),
             "tweet_id" : lambda obj : obj.get("id"),
             "is_source_tweet" : lambda obj : 1 if twt["is_src"] else 0,
-            "in_reply_user" : lambda obj : int(obj.get("in_reply_to_user_id")),
+            "in_reply_user" : lambda obj : obj.get("in_reply_to_user_id"),
             "user_id" : lambda obj : obj["user"].get("id"),
             
             # Tweet metadata
@@ -353,7 +353,7 @@ def pheme_to_csv(event, dataset, output, Parser=Tweets):
     print("%s was generated in %s minutes" % (fn, (time.time() - start) / 60))
     return df
 
-def collect_tweets_thread_data(data_dir, output_dir, name):
+def collect_all_events(data_dir, output_dir, name):
     events = os.listdir(data_dir)
     events = [event for event in events if not event.startswith(".")]
     dfs = []
