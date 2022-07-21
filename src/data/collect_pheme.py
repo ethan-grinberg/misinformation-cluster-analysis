@@ -296,7 +296,7 @@ class Tweets:
     def export(self):
         fn = "%s/%s.csv" % (self.output_dir, self.event)
         df = pd.DataFrame(data=self.data)
-        df.to_csv(fn, index=False)
+        # df.to_csv(fn, index=False)
         return fn, df
     
     def datestr_to_tmsp(self, datestr):
@@ -353,8 +353,15 @@ def pheme_to_csv(event, dataset, output, Parser=Tweets):
     print("%s was generated in %s minutes" % (fn, (time.time() - start) / 60))
     return df
 
-def collect_tweets_thread_data(data_dir, output_dir):
+def collect_tweets_thread_data(data_dir, output_dir, name):
     events = os.listdir(data_dir)
     events = [event for event in events if not event.startswith(".")]
+    dfs = []
     for event in events:
         df_tweets = pheme_to_csv(event, data_dir, output_dir)
+        dfs.append(df_tweets)
+    
+    # export all events to single file
+    all_events = pd.concat(dfs)
+    f_name = "%s/%s.csv" % (output_dir, name)
+    all_events.to_csv(f_name, index=False)

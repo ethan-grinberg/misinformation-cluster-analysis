@@ -32,7 +32,7 @@ def main(proj_dir, hoaxy=False):
     else:
         data_dir = os.path.join(ext_data, "pheme-rnr-dataset")
         output_dir = os.path.join(raw_data, "pheme")
-        collect_tweets_thread_data(data_dir, output_dir)
+        collect_tweets_thread_data(data_dir, output_dir, "pheme_all_events")
 
 if __name__ == '__main__':
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
