@@ -29,7 +29,9 @@ class Visualize:
         self.X = np.array(cluster_info.graph_embedding.to_list())
     
     def viz_graphs(self, ids):
-        viz = self.cluster_info.loc[self.cluster_info.id.isin(ids)]
+        viz = self.cluster_info.loc[self.cluster_info.id.isin(ids)].copy()
+        viz.loc[:, 'title'] = viz.loc[:, 'title'].fillna("no title")
+
         labels = viz.label.to_list() 
         ids = viz.id.to_list()
         titles = viz.title.to_list()
