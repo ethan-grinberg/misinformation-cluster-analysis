@@ -38,10 +38,35 @@ class PhemeFeatures(DataModel):
         num_nodes = len(nodes)
         num_edges = len(edges)
 
+        # components
+        wcc = [c for c in sorted(nx.weakly_connected_components(graph), key=len, reverse=True)]
+        num_wcc = len(wcc)
+        largest_wcc = len(wcc[0])
+
+        # distance
+        H = graph.subgraph(wcc[0])
+        H = H.to_undirected()
+        largest_di = nx.diameter(H)
+        w_index = nx.wiener_index(H)
+
+        #degree
+        out_deg = [deg[1] for deg in graph.out_degree()]
+        in_deg = [deg[1] for deg in graph.in_degree()]
+        max_in = max(in_deg)
+        max_out = max(out_deg)
+
         # append data
         extra_data['edges'] = list(edges)
         extra_data['num_nodes'] = num_nodes
         extra_data['num_edges'] = num_edges
+        extra_data['num_wcc'] = num_wcc
+        extra_data['largest_wcc'] = largest_wcc / num_nodes
+        extra_data['diameter_largest_wcc'] = largest_di
+        extra_data['max_out_degree'] = max_out
+        extra_data['max_in_degree'] = max_in
+        extra_data['mean_out_degree'] = sum(out_deg) / len(out_deg)
+        extra_data['mean_in_degree'] = sum(in_deg) / len(in_deg)
+        extra_data['wiener_index'] = w_index / num_nodes
 
     def build_graphs(self, ids, graph_df):
         graphs = {}
