@@ -14,7 +14,8 @@ class PhemeFeatures(DataModel):
         grouped_data = raw_data.rename(columns={'thread': 'id'})
 
         # truth value of non-rumors is non-rumor
-        grouped_data['truth'] = grouped_data['truth'].fillna('non-rumor')
+        grouped_data = grouped_data.loc[grouped_data.truth.notnull()].copy()
+        # grouped_data['truth'] = grouped_data['truth'].fillna('non-rumor')
 
         grouped_data = grouped_data.groupby("id").filter(lambda x: len(x) >= min_edges)
         upper = grouped_data.id.value_counts().quantile(1-tolerance)
