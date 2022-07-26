@@ -31,6 +31,18 @@ class PhemeFeatures(DataModel):
         row_data['truth'] = first_row.truth
         row_data['title'] = first_row.title
         row_data['event'] = first_row.event
+        row_data['mean_tweet_len'] = raw_data.tweet_length.mean()
+        row_data['mean_user_mentions'] = raw_data.user_mentions.mean()
+        row_data['urls_mean'] = raw_data.urls_count.mean()
+        row_data['media_count_mean'] = raw_data.media_count.mean()
+        row_data['hashtags_count_mean'] = raw_data.hashtags_count.mean()
+        row_data['retweet_count_mean'] = raw_data.retweet_count.mean()
+        row_data['favorite_count_mean'] = raw_data.favorite_count.mean()
+        row_data['mentions_count_mean'] = raw_data.mentions_count.mean()
+        row_data['user_tweet_count_mean'] = raw_data['user.tweets_count'].mean()
+        row_data['user_follower_count_mean'] = raw_data['user.followers_count'].mean()
+        row_data['user_friends_count_mean'] = raw_data['user.friends_count'].mean()
+        row_data['sentiment_mean'] = raw_data['sentimentscore'].mean()
     
     def get_network_data(self, graph, extra_data):
         edges = graph.edges
@@ -99,37 +111,10 @@ class PhemeFeatures(DataModel):
             "media_count": funcs,
             "sensitive": funcs,
             "has_place": funcs,
-            "has_coords": funcs,
             "retweet_count": funcs,
             "hashtags_count": funcs + [shared],
             "urls_count": funcs,
-            "user.tweets_count": funcs,
-            "is_rumor": max,
-            "tweet_id": len,
-            "user.has_bg_img": funcs,
-            "has_quest": funcs,
-            "has_exclaim": funcs,
-            "has_quest_or_exclaim": funcs,
-            "user.default_pic": funcs,
-            "has_smile_emoji": funcs,
-            "user.verified": funcs,
-            "user.name_length": funcs,
-            "user.handle_length": funcs,
-            "user.profile_sbcolor": funcs,
-            "user.profile_bgcolor": funcs,
-            
-            "hasperiod": funcs,
-            "number_punct": funcs,
-            "negativewordcount" : funcs,
-            "positivewordcount" : funcs,
-            "capitalratio" : funcs,
-            "contentlength" : funcs,
-            "sentimentscore" : funcs,
-            "Noun" : funcs,
-            "Verb" : funcs,
-            "Adjective" : funcs,
-            "Pronoun" : funcs,
-            "Adverb": funcs,
+            "user.verified": funcs
         }
         rename = {
             "tweet_id": "thread_length"
