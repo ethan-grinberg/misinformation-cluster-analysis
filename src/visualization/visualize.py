@@ -27,34 +27,43 @@ class Visualize:
     def __init__(self, cluster_info, graphs=None):
         self.cluster_info = cluster_info
         self.graphs = graphs
-        self.X = np.array(cluster_info.graph_embedding.to_list())
+
+        self.X = {}
+        for k, v in self.cluster_info.items():
+            self.X[k] = np.array(v.graph_embedding.to_list())
     
     def viz_graphs(self, ids):
-        viz = self.cluster_info.loc[self.cluster_info.id.isin(ids)].copy()
-        viz.loc[:, 'title'] = viz.loc[:, 'title'].fillna("no title")
+        subplot = 0
+        for k,v in self.cluster_info.items():
 
-        labels = viz.label.to_list() 
-        ids = viz.id.to_list()
-        titles = viz.title.to_list()
+            viz = v.loc[v.id.isin(ids[k])].copy()
+            viz.loc[:, 'title'] = viz.loc[:, 'title'].fillna("no title")
 
-        i = 0
-        for id in ids:
-            g = self.graphs[id]
-            pos = graphviz_layout(g, prog="dot")
-            t = self.wrap_by_word(titles[i], 8)
+            labels = viz.label.to_list() 
+            cur_ids = viz.id.to_list()
+            titles = viz.title.to_list()
 
-            plt.figure(i, figsize=(5,5))
-            ax = plt.gca()
-            ax.set_title(t, fontsize='x-large', fontweight='bold')
+            i = 0
+            for id in cur_ids:
+                g = self.graphs[k][id]
+                pos = graphviz_layout(g, prog="dot")
 
-            if labels[i] == 0:
-                nx.draw(g, node_color="#1f77b4", ax=ax, pos=pos)
-            elif labels[i] == 1:
-                nx.draw(g, node_color="#ff7f0e", ax=ax, pos=pos)
-            else:
-                nx.draw(g, node_color="#d62728", ax=ax, pos=pos)
-            
-            i +=1
+                t = self.wrap_by_word(titles[i], 8)
+                t = t + '\n ' + k
+
+                plt.figure(subplot, figsize=(5,5))
+                ax = plt.gca()
+                ax.set_title(t, fontsize='x-large', fontweight='bold')
+
+                if labels[i] == 0:
+                    nx.draw(g, node_color="#1f77b4", ax=ax, pos=pos)
+                elif labels[i] == 1:
+                    nx.draw(g, node_color="#ff7f0e", ax=ax, pos=pos)
+                else:
+                    nx.draw(g, node_color="#d62728", ax=ax, pos=pos)
+                
+                i +=1
+                subplot += 1
 
         plt.show()
     
@@ -112,47 +121,56 @@ class Visualize:
         return chart
     
     def plot_cluster_size(self, width=200, height=300):
-        df  = pd.DataFrame(self.cluster_info.label.value_counts())
-        df = df.rename({"label": "count"}, axis=1)
-        df['label'] = df.index
-        df = df.reset_index()
+        charts = []
+        for k, v in self.cluster_info.items():
+            df  = pd.DataFrame(v.label.value_counts())
+            df = df.rename({"label": "count"}, axis=1)
+            df['label'] = df.index
+            df = df.reset_index()
 
-        chart = alt.Chart(df).mark_bar().encode(
-            x='label:N',
-            y='count',
-            color="label:N"
-        ).properties(width=width, height=height)
+            chart = alt.Chart(df).mark_bar().encode(
+                x='label:N',
+                y='count',
+                color="label:N"
+            ).properties(width=width, height=height, title=k)
 
-        return chart
+            charts.append(chart)
+
+        return alt.hconcat(*charts)
 
     def graph_point_range_cluster_info(self, rename, y_vals, width, height, cols):
-        clust = self.cluster_info.copy()
+        charts = []
         if rename:
-            clust.rename(columns=y_vals, inplace=True)
+            col_mapper = y_vals
             y_vals = list(y_vals.values())
+        for k,v in self.cluster_info.items():
+            clust = v.copy()
+            if rename:
+                clust.rename(columns=col_mapper, inplace=True)
 
-        points = (
-            alt.Chart()
-            .mark_circle(size=200)
-            .transform_fold(fold=y_vals, as_=["category", "y"])
-            .encode(x="label:N", y=alt.Y("mean(y):Q"), color="label:N")
-        )
+            points = (
+                alt.Chart()
+                .mark_circle(size=200)
+                .transform_fold(fold=y_vals, as_=[k, "y"])
+                .encode(x="label:N", y=alt.Y("mean(y):Q"), color="label:N")
+            )
 
-        point_range = (
-            alt.Chart()
-            .mark_errorbar(extent="ci")
-            .transform_fold(fold=y_vals, as_=["category", "y"])
-            .encode(x="label:N", y=alt.Y("mean(y):Q"), color="label:N", strokeWidth=alt.value(2))
-        )
+            point_range = (
+                alt.Chart()
+                .mark_errorbar(extent="ci")
+                .transform_fold(fold=y_vals, as_=[k, "y"])
+                .encode(x="label:N", y=alt.Y("mean(y):Q"), color="label:N", strokeWidth=alt.value(2))
+            )
 
-        chart = (
-            alt.layer(points, point_range, data=clust)
-            .properties(width=width, height=height)
-            .facet(columns=cols, facet="category:N")
-        )
+            chart = (
+                alt.layer(points, point_range, data=clust)
+                .properties(title=k, width=width, height=height)
+                .facet(columns=cols, facet=k+":N")
+            )
 
-        chart = self.__configure_alt_chart(chart)
-        return chart
+            charts.append(chart)
+
+        return alt.hconcat(*charts)
     
     def __configure_alt_chart(self, chart):
         chart = chart.configure_header(title=None, labelFontSize=25, labelFontWeight='bold')
