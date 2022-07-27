@@ -6,8 +6,8 @@ import networkx as nx
 
 
 class PhemeFeatures(DataModel):
-    def __init__(self):
-        pass
+    def __init__(self, tweet_level=True):
+        self.tweet_level = tweet_level
 
     def filter_data(self, raw_data, tolerance, min_edges):
         #rename thread to be consistent in code
@@ -89,7 +89,11 @@ class PhemeFeatures(DataModel):
         return graphs
     
     def _build_graph(self, net):
-        g = nx.from_pandas_edgelist(net, "user_id", "in_reply_user", create_using=nx.DiGraph)
+        if self.tweet_level:
+            g = nx.from_pandas_edgelist(net, "tweet_id", "in_reply_tweet", create_using=nx.DiGraph)
+        else:
+            g = nx.from_pandas_edgelist(net, "user_id", "in_reply_user", create_using=nx.DiGraph)
+
         relabled_g = nx.convert_node_labels_to_integers(g)
 
         # add out degree centrality attribute to nodes

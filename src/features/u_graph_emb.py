@@ -26,6 +26,7 @@ class UGraphEmb:
         self.verbose = verbose
         self.graph_dist = graph_dist
         self.dist_timeout = dist_timeout
+        self.count = 0
 
     def fit(self, nx_graphs):
         print('fitting ugraphemb model')
@@ -66,6 +67,8 @@ class UGraphEmb:
         return graphs
     
     def __graph_distance(self, g1, g2, graph_d):
+        print("iter", self.count)
+        self.count += 1
         if graph_d == "edit":
             d = nx.graph_edit_distance(g1, g2, timeout=self.dist_timeout)
             if d is None:
