@@ -5,6 +5,7 @@ import pandas as pd
 import networkx as nx
 from sklearn.manifold import TSNE
 import seaborn as sns
+from networkx.drawing.nx_pydot import graphviz_layout
 
 class Visualize:
     @staticmethod
@@ -39,7 +40,7 @@ class Visualize:
         i = 0
         for id in ids:
             g = self.graphs[id]
-            pos = self.__get_graph_layout(g)
+            pos = graphviz_layout(g, prog="dot")
             t = self.wrap_by_word(titles[i], 8)
 
             plt.figure(i, figsize=(5,5))
