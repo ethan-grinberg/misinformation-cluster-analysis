@@ -6,8 +6,9 @@ import networkx as nx
 
 
 class PhemeFeatures(DataModel):
-    def __init__(self, tweet_level=False):
+    def __init__(self, tweet_level=False, unverified_tweets=True):
         self.tweet_level = tweet_level
+        self.unverified_tweets = unverified_tweets
 
     def filter_data(self, raw_data, tolerance, min_edges):
         #rename thread to be consistent in code
@@ -15,7 +16,8 @@ class PhemeFeatures(DataModel):
 
         # truth value of non-rumors is non-rumor
         grouped_data = grouped_data.loc[grouped_data.truth.notnull()].copy()
-        # grouped_data['truth'] = grouped_data['truth'].fillna('non-rumor')
+        if not self.unverified_tweets:
+            grouped_data = grouped_data.loc[~(grouped_data.truth == 'unverified')].copy()
 
         grouped_data = grouped_data.groupby("id").filter(lambda x: len(x) >= min_edges)
         upper = grouped_data.id.value_counts().quantile(1-tolerance)
