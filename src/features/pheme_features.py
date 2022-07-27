@@ -6,7 +6,7 @@ import networkx as nx
 
 
 class PhemeFeatures(DataModel):
-    def __init__(self, tweet_level=True):
+    def __init__(self, tweet_level=False):
         self.tweet_level = tweet_level
 
     def filter_data(self, raw_data, tolerance, min_edges):
