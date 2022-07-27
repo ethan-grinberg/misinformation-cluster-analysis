@@ -90,9 +90,9 @@ class PhemeFeatures(DataModel):
     
     def _build_graph(self, net):
         if self.tweet_level:
-            g = nx.from_pandas_edgelist(net, "tweet_id", "in_reply_tweet", create_using=nx.DiGraph)
+            g = nx.from_pandas_edgelist(net, "in_reply_tweet", "tweet_id", create_using=nx.DiGraph)
         else:
-            g = nx.from_pandas_edgelist(net, "user_id", "in_reply_user", create_using=nx.DiGraph)
+            g = nx.from_pandas_edgelist(net, "in_reply_user", "user_id", create_using=nx.DiGraph)
 
         relabled_g = nx.convert_node_labels_to_integers(g)
 
