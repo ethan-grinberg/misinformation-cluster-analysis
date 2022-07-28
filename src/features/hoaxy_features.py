@@ -1,7 +1,7 @@
 import pandas as pd
 import networkx as nx
 import numpy as np
-from data_model import DataModel
+from .data_model import DataModel
 import EoN
 
 # nlp modules

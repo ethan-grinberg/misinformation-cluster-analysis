@@ -1,5 +1,5 @@
 import pandas as pd
-from data_model import DataModel
+from .data_model import DataModel
 from functools import reduce
 import numpy as np
 import networkx as nx

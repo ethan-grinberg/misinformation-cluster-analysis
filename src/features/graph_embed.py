@@ -2,10 +2,10 @@ import pandas as pd
 import numpy as np
 import networkx as nx
 import karateclub.graph_embedding as ge
-from u_graph_emb import UGraphEmb
+from .u_graph_emb import UGraphEmb
 import os
-from hoaxy_features import HoaxyFeatures
-from pheme_features import PhemeFeatures
+from .hoaxy_features import HoaxyFeatures
+from .pheme_features import PhemeFeatures
 
 class GraphEmbed:
     @staticmethod
@@ -15,7 +15,6 @@ class GraphEmbed:
     
     # available graph embedding models
     emb_models = {"feather": ge.FeatherGraph(), "graph2vec": ge.Graph2Vec(), "ugraphemb": UGraphEmb()}
-    data_models = {"pheme": PhemeFeatures(), "hoaxy": HoaxyFeatures()}
 
     def __init__(self, 
                 processed_data,
@@ -24,7 +23,13 @@ class GraphEmbed:
                 raw_data,
                 data_model,
                 emb_model=None, 
-                model_params=None):
+                model_params=None,
+                tweet_level=False,
+                unverified_tweets=True):
+        
+        data_models = {"pheme": PhemeFeatures(tweet_level=tweet_level, 
+                                              unverified_tweets=unverified_tweets), 
+                      "hoaxy": HoaxyFeatures()}
         
         # check whether or not embeddings were computed
         self.processed_data = processed_data
@@ -41,7 +46,7 @@ class GraphEmbed:
                     self.model.__dict__[k] = v
         
         # set up data model for extracting features
-        self.data_model = self.data_models[data_model]
+        self.data_model = data_models[data_model]
 
         # filter out min number of edges from networks
         self.graph_df = self.data_model.filter_data(raw_data, tolerance, min_edges)

@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import string
 import time
-from util import to_unix_tmsp, parse_twitter_datetime
+from .util import to_unix_tmsp, parse_twitter_datetime
 from functools import reduce
 
 
