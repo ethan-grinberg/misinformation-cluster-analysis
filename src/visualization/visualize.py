@@ -1,3 +1,4 @@
+from typing_extensions import final
 import altair as alt
 from matplotlib import pyplot as plt
 import numpy as np
@@ -5,6 +6,7 @@ import pandas as pd
 import networkx as nx
 from sklearn.manifold import TSNE
 import seaborn as sns
+import os
 from networkx.drawing.nx_pydot import graphviz_layout
 
 class Visualize:
@@ -32,8 +34,8 @@ class Visualize:
         for k, v in self.cluster_info.items():
             self.X[k] = np.array(v.graph_embedding.to_list())
     
-    def viz_graphs(self, ids):
-        subplot = 0
+    # Currently not working properly
+    def viz_graphs(self, ids, save=False, data_dir=None):
         for k,v in self.cluster_info.items():
 
             viz = v.loc[v.id.isin(ids[k])].copy()
@@ -51,7 +53,7 @@ class Visualize:
                 t = self.wrap_by_word(titles[i], 8)
                 t = t + '\n ' + k
 
-                plt.figure(subplot, figsize=(5,5))
+                plt.figure(i, figsize=(5,5))
                 ax = plt.gca()
                 ax.set_title(t, fontsize='x-large', fontweight='bold')
 
@@ -61,11 +63,14 @@ class Visualize:
                     nx.draw(g, node_color="#ff7f0e", ax=ax, pos=pos)
                 else:
                     nx.draw(g, node_color="#d62728", ax=ax, pos=pos)
-                
-                i +=1
-                subplot += 1
 
-        plt.show()
+                i += 1
+
+            if save:
+                plt.savefig(os.path.join(data_dir, 'central_networks_' + str(k) + '.svg'))
+
+        if not save:
+            plt.show()
     
     def __get_graph_layout(self, g):
         df = pd.DataFrame(index=g.nodes(), columns=g.nodes())
@@ -92,7 +97,6 @@ class Visualize:
         )
         return chart
 
-    
     def get_graph(self, idx):
         id = self.cluster_info.iloc[idx].id
         return self.graphs[id]
@@ -170,7 +174,8 @@ class Visualize:
 
             charts.append(chart)
 
-        return alt.hconcat(*charts)
+        final_chart =  alt.hconcat(*charts)
+        return final_chart
     
     def __configure_alt_chart(self, chart):
         chart = chart.configure_header(title=None, labelFontSize=25, labelFontWeight='bold')
