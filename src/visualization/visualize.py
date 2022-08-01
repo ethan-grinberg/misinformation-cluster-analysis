@@ -27,6 +27,8 @@ class Visualize:
     def __init__(self, cluster_info, graphs=None):
         self.cluster_info = cluster_info
         self.graphs = graphs
+        self.num_clusters = cluster_info.label.nunique()
+        self.ind_clusters = [cluster_info.loc[cluster_info.label == i] for i in range(self.num_clusters)]
         self.X = np.array(cluster_info.graph_embedding.to_list())
     
     def viz_graphs(self, ids):
@@ -68,6 +70,25 @@ class Visualize:
 
         layout = nx.kamada_kawai_layout(g, dist=df.to_dict())
         return layout
+    
+    def viz_ind_cluster_truth(self, width=200, height=300):
+        dfs = []
+        for i in range(self.num_clusters):
+            df = pd.DataFrame(self.ind_clusters[i].truth.value_counts() / len(self.ind_clusters[i]))
+            df = df.rename({"truth": 'ratio'}, axis=1)
+            df['truth'] = df.index
+            df = df.reset_index(drop=True)
+            df['label'] = i
+            dfs.append(df)
+        df = pd.concat(dfs, axis=0)
+
+        chart = alt.Chart(df).mark_bar().encode(
+            x='label:N',
+            y='ratio:Q',
+            color='label:N',
+            column = 'truth:N'
+        ).properties(width=width, height=height)
+        return chart
 
     def viz_type_clusters(self, variable):
         df = self.cluster_info.copy()
