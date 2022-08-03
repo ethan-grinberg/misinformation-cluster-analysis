@@ -33,6 +33,7 @@ class Visualize:
     
     def viz_graphs(self, ids):
         viz = self.cluster_info.loc[self.cluster_info.id.isin(ids)].copy()
+        viz = viz.sort_values(by='label')
         viz.loc[:, 'title'] = viz.loc[:, 'title'].fillna("no title")
 
         labels = viz.label.to_list() 
@@ -40,8 +41,8 @@ class Visualize:
         titles = viz.title.to_list()
 
         i = 0
-        for id in ids:
-            g = self.graphs[id]
+        for i in range(len(viz)):
+            g = self.graphs[ids[i]]
             pos = graphviz_layout(g, prog="dot")
             t = self.wrap_by_word(titles[i], 8)
 
