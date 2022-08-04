@@ -70,11 +70,11 @@ class Tweets:
             
             # Conservation metadata
             "thread" : lambda obj : obj["thread"],
-            "in_reply_tweet" : lambda obj : np.int64(obj.get("in_reply_to_status_id")),
+            "in_reply_tweet" : lambda obj : np.int64(obj.get("in_reply_to_status_id")) if obj.get("in_reply_to_status_id") else 0,
             "event" : lambda obj : obj.get("event"),
             "tweet_id" : lambda obj : np.int64(obj.get("id")),
             "is_source_tweet" : lambda obj : 1 if twt["is_src"] else 0,
-            "in_reply_user" : lambda obj : np.int64(obj.get("in_reply_to_user_id")),
+            "in_reply_user" : lambda obj :  np.int64(obj.get("in_reply_to_user_id")) if obj.get("in_reply_to_user_id") else 0,
             "user_id" : lambda obj : np.int64(obj["user"].get("id")),
             
             # Tweet metadata

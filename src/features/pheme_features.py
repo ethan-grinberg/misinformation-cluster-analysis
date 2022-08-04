@@ -14,6 +14,10 @@ class PhemeFeatures(DataModel):
         #rename thread to be consistent in code
         grouped_data = raw_data.rename(columns={'thread': 'id'})
 
+        # 0 ids have no reply
+        grouped_data['in_reply_user'] = grouped_data['in_reply_user'].replace(0, pd.NA)
+        grouped_data['in_reply_tweet'] = grouped_data['in_reply_tweet'].replace(0, pd.NA)
+
         # truth value of non-rumors is non-rumor
         grouped_data = grouped_data.loc[grouped_data.truth.notnull()].copy()
         if not self.unverified_tweets:
@@ -91,6 +95,7 @@ class PhemeFeatures(DataModel):
         return graphs
     
     def _build_graph(self, net):
+        net = net.dropna(subset=['in_reply_tweet', 'in_reply_user'])
         if self.tweet_level:
             g = nx.from_pandas_edgelist(net, "in_reply_tweet", "tweet_id", create_using=nx.DiGraph)
         else:
