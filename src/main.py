@@ -11,7 +11,7 @@ def main(project_dir):
     # data pipeline settings
     pipeline = {'make_dataset': False, 'build_features': True, 'build_model': True, 'export_analysis': False}
     make_dataset_args = {'hoaxy': False}
-    build_features_args = {'pheme': True, 'tweet_level': False, 'unverified_tweets': True, 'group_by_title': True}
+    build_features_args = {'pheme': True, 'tweet_level': False, 'unverified_tweets': False, 'group_by_title': False}
     build_model_args = {'vis': False, "pheme": True}
     export_analysis_args = {}
 
