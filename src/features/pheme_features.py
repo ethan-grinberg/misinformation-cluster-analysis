@@ -53,6 +53,9 @@ class PhemeFeatures(DataModel):
         row_data['user_follower_count_mean'] = raw_data['user.followers_count'].mean()
         row_data['user_friends_count_mean'] = raw_data['user.friends_count'].mean()
         row_data['sentiment_mean'] = raw_data['sentimentscore'].mean()
+
+        if self.group_by_title:
+            row_data['num_threads'] = raw_data.thread.nunique()
     
     def get_network_data(self, graph, extra_data):
         edges = graph.edges
