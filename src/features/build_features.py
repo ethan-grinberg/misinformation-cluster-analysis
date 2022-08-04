@@ -7,7 +7,7 @@ from .graph_embed import GraphEmbed
 import sys
 
 
-def build_features(proj_dir, pheme=True, tweet_level=False, unverified_tweets=True):
+def build_features(proj_dir, pheme=True, tweet_level=False, unverified_tweets=True, group_by_title=False):
     """ Runs data processing scripts to turn raw data from (../raw) into
         cleaned data ready to be analyzed (saved in ../processed).
     """
@@ -29,7 +29,8 @@ def build_features(proj_dir, pheme=True, tweet_level=False, unverified_tweets=Tr
         data_model, 
         emb_model="ugraphemb", 
         tweet_level=tweet_level, 
-        unverified_tweets=unverified_tweets)
+        unverified_tweets=unverified_tweets,
+        group_by_title=group_by_title)
     
     embedding_df = GE.get_features()
     embedding_df.to_pickle(p_data_file)

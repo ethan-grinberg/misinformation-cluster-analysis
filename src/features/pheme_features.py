@@ -6,13 +6,17 @@ import networkx as nx
 
 
 class PhemeFeatures(DataModel):
-    def __init__(self, tweet_level=False, unverified_tweets=True):
+    def __init__(self, tweet_level=False, unverified_tweets=True, group_by_title=False):
         self.tweet_level = tweet_level
         self.unverified_tweets = unverified_tweets
+        self.group_by_title = group_by_title
 
     def filter_data(self, raw_data, tolerance, min_edges):
         #rename thread to be consistent in code
-        grouped_data = raw_data.rename(columns={'thread': 'id'})
+        if self.group_by_title:
+           grouped_data =  self._group_by_title(raw_data)
+        else:
+            grouped_data = raw_data.rename(columns={'thread': 'id'})
 
         # 0 ids have no reply
         grouped_data['in_reply_user'] = grouped_data['in_reply_user'].replace(0, pd.NA)
@@ -89,7 +93,7 @@ class PhemeFeatures(DataModel):
     def build_graphs(self, ids, graph_df):
         graphs = {}
         for id in ids:
-            net = graph_df.loc[(graph_df.id == id) & (graph_df.is_source_tweet != 1)]
+            net = graph_df.loc[graph_df.id == id]
             g = self._build_graph(net)
             graphs[id] = g
         return graphs
@@ -109,6 +113,15 @@ class PhemeFeatures(DataModel):
         nx.set_node_attributes(relabled_g, centrality, "out-degree")
 
         return relabled_g
+    
+    def _group_by_title(self, raw_data):
+        grouped_data = raw_data.copy()
+        grouped_data['id'] = 0
+        i = 0
+        for title in grouped_data.loc[grouped_data.title != "none"].title.unique():
+            grouped_data.loc[grouped_data.title == title, 'id'] = i
+            i+=1
+        return grouped_data
 
     def agg_tweets_by_thread(df):
     
