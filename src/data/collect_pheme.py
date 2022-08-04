@@ -40,7 +40,7 @@ class Tweets:
         """
         # Annotation metadata
         twt['truth'] = self.compute_veracity(annotation)
-        twt['title'] = annotation.get('category', np.NaN)
+        twt['title'] = annotation.get('category', 'none')
 
         twt['category'] = cat
         twt["thread"] = thrd
@@ -70,12 +70,12 @@ class Tweets:
             
             # Conservation metadata
             "thread" : lambda obj : obj["thread"],
-            "in_reply_tweet" : lambda obj : obj.get("in_reply_to_status_id"),
+            "in_reply_tweet" : lambda obj : np.int64(obj.get("in_reply_to_status_id")),
             "event" : lambda obj : obj.get("event"),
-            "tweet_id" : lambda obj : obj.get("id"),
+            "tweet_id" : lambda obj : np.int64(obj.get("id")),
             "is_source_tweet" : lambda obj : 1 if twt["is_src"] else 0,
-            "in_reply_user" : lambda obj : obj.get("in_reply_to_user_id"),
-            "user_id" : lambda obj : obj["user"].get("id"),
+            "in_reply_user" : lambda obj : np.int64(obj.get("in_reply_to_user_id")),
+            "user_id" : lambda obj : np.int64(obj["user"].get("id")),
             
             # Tweet metadata
             "tweet_length": lambda obj : len(obj.get("text","")),
