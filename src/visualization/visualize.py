@@ -147,7 +147,7 @@ class Visualize:
 
         return chart
 
-    def graph_point_range_cluster_info(self, rename, y_vals, width, height, cols):
+    def graph_point_range_cluster_info(self, rename, y_vals, width, height, cols, label):
         clust = self.cluster_info.copy()
         if rename:
             clust.rename(columns=y_vals, inplace=True)
@@ -157,14 +157,14 @@ class Visualize:
             alt.Chart()
             .mark_circle(size=200)
             .transform_fold(fold=y_vals, as_=["category", "y"])
-            .encode(x="label:N", y=alt.Y("mean(y):Q"), color="label:N")
+            .encode(x=label+":N", y=alt.Y("mean(y):Q"), color=label+":N")
         )
 
         point_range = (
             alt.Chart()
             .mark_errorbar(extent="ci")
             .transform_fold(fold=y_vals, as_=["category", "y"])
-            .encode(x="label:N", y=alt.Y("mean(y):Q"), color="label:N", strokeWidth=alt.value(2))
+            .encode(x=label+":N", y=alt.Y("mean(y):Q"), color=label+":N", strokeWidth=alt.value(2))
         )
 
         chart = (
