@@ -6,10 +6,11 @@ import networkx as nx
 
 
 class PhemeFeatures(DataModel):
-    def __init__(self, tweet_level=False, unverified_tweets=True, group_by_title=False):
+    def __init__(self, tweet_level=False, unverified_tweets=True, group_by_title=False, filter=True):
         self.tweet_level = tweet_level
         self.unverified_tweets = unverified_tweets
         self.group_by_title = group_by_title
+        self.filter = filter
 
     def filter_data(self, raw_data, tolerance, min_edges):
         #rename thread to be consistent in code
@@ -24,15 +25,21 @@ class PhemeFeatures(DataModel):
 
         # truth value of non-rumors is non-rumor
         grouped_data = grouped_data.loc[grouped_data.truth.notnull()].copy()
+
         if not self.unverified_tweets:
             grouped_data = grouped_data.loc[~(grouped_data.truth == 'unverified')].copy()
-
-        grouped_data = grouped_data.groupby("id").filter(lambda x: len(x) >= min_edges)
-        upper = grouped_data.id.value_counts().quantile(1-tolerance)
-        lower = grouped_data.id.value_counts().quantile(tolerance)
-        graph_df = grouped_data.groupby("id").filter(lambda x: (len(x) >= lower) & (len(x) <= upper))
         
-        return graph_df.reset_index(drop=True)
+        # make sure graphs meet minimum size
+        grouped_data = grouped_data.groupby("id").filter(lambda x: len(x) >= min_edges)
+
+        if self.filter:
+            upper = grouped_data.id.value_counts().quantile(1-tolerance)
+            lower = grouped_data.id.value_counts().quantile(tolerance)
+            graph_df = grouped_data.groupby("id").filter(lambda x: (len(x) >= lower) & (len(x) <= upper))
+        
+            return graph_df.reset_index(drop=True)
+        else:
+            return grouped_data
 
     def get_meta_data(self, raw_data, row_data, id):
         first_row = raw_data.iloc[0]

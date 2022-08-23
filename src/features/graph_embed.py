@@ -26,11 +26,13 @@ class GraphEmbed:
                 model_params=None,
                 tweet_level=False,
                 unverified_tweets=True,
+                filter=True,
                 group_by_title=False):
         
         data_models = {"pheme": PhemeFeatures(tweet_level=tweet_level, 
                                               unverified_tweets=unverified_tweets, 
-                                              group_by_title=group_by_title), 
+                                              group_by_title=group_by_title,
+                                              filter=filter), 
                       "hoaxy": HoaxyFeatures()}
         
         # check whether or not embeddings were computed
