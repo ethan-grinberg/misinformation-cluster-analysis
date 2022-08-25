@@ -39,7 +39,7 @@ class PhemeFeatures(DataModel):
         
             return graph_df.reset_index(drop=True)
         else:
-            return grouped_data
+            return grouped_data.reset_index(drop=True)
 
     def get_meta_data(self, raw_data, row_data, id):
         first_row = raw_data.iloc[0]
