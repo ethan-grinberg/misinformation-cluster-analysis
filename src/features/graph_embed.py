@@ -66,6 +66,9 @@ class GraphEmbed:
         # get all networks as nx objects dictionary
         self.graphs = self.data_model.build_graphs(self.ids, self.graph_df)
 
+        # get all non embedding related features
+        extra_features = self.__get_extra_features()
+
         if not self.has_embeddings:
             self.__fit()
             embeddings = self.__get_embedding().tolist()
@@ -74,8 +77,6 @@ class GraphEmbed:
             df = pd.read_pickle(self.processed_data)
             old_ids = df.id.to_list()
             df = pd.DataFrame(df.graph_embedding)
-
-        extra_features = self.__get_extra_features()
 
         # make sure the precomputed graph embeddings 
         # line up with new data

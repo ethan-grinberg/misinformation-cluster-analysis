@@ -44,6 +44,11 @@ class PhemeFeatures(DataModel):
     def get_meta_data(self, raw_data, row_data, id):
         first_row = raw_data.iloc[0]
 
+        # time data
+        times = pd.to_datetime(raw_data.created * 1e6)
+        times = times.sort_values().to_list()
+        total_time = (times[-1] - times[0]).total_seconds()
+
         row_data['id'] = id
         row_data['truth'] = first_row.truth
         row_data['title'] = first_row.title
@@ -60,7 +65,20 @@ class PhemeFeatures(DataModel):
         row_data['user_follower_count_mean'] = raw_data['user.followers_count'].mean()
         row_data['user_friends_count_mean'] = raw_data['user.friends_count'].mean()
         row_data['sentiment_mean'] = raw_data['sentimentscore'].mean()
+        row_data['total_time'] = total_time
 
+        # encoding truth values
+        if first_row.truth == 'unverified':
+            row_data['unverified'] = 1
+        else:
+            row_data['unverified'] = 0
+
+        if first_row.truth == 'true':
+            row_data['truth_val'] = 1
+        else:
+            row_data['truth_val'] = 0
+
+        # number of threads
         if self.group_by_title:
             row_data['num_threads'] = raw_data.thread.nunique()
     
@@ -99,6 +117,10 @@ class PhemeFeatures(DataModel):
         extra_data['mean_out_degree'] = sum(out_deg) / len(out_deg)
         extra_data['mean_in_degree'] = sum(in_deg) / len(in_deg)
         extra_data['wiener_index'] = w_index / num_nodes
+        extra_data['time_per_node'] = extra_data['total_time'] / num_nodes
+
+        if self.group_by_title:
+            extra_data['nodes_per_thread'] = extra_data['num_threads'] / num_nodes
 
     def build_graphs(self, ids, graph_df):
         graphs = {}
