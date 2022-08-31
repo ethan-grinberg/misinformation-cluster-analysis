@@ -81,6 +81,7 @@ class PhemeFeatures(DataModel):
         # number of threads
         if self.group_by_title:
             row_data['num_threads'] = raw_data.thread.nunique()
+            row_data['time_per_thread'] = total_time / row_data['num_threads']
     
     def get_network_data(self, graph, extra_data):
         edges = graph.edges
