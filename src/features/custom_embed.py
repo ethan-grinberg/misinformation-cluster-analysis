@@ -20,7 +20,7 @@ class CustomEmbed:
     
     def fit(self, extra_features):
         scalar = StandardScaler()
-        X = extra_features[:, self.FEATURES]
+        X = extra_features.loc[:, self.FEATURES]
         self.X = scalar.fit_transform(X)
 
     def get_embedding(self):
