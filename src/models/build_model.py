@@ -10,7 +10,7 @@ sys.path.append("..")
 from visualization.visualize import Visualize
 
 
-def build_model(proj_dir, vis=False, pheme=True):
+def build_model(proj_dir, vis=False, pheme=True, n_clusters=None):
     """ Runs data processing scripts to turn raw data from (../raw) into
         cleaned data ready to be analyzed (saved in ../processed).
     """
@@ -24,7 +24,7 @@ def build_model(proj_dir, vis=False, pheme=True):
         out_file = os.path.join(proj_dir, "models", "graphs_clustered.pkl")
 
     cluster = ClusterGraphs(graph_data)
-    cluster.cluster_k_means()
+    cluster.cluster_k_means(n_clusters=n_clusters)
     cluster_df = cluster.get_clustered_df()
     cluster_df.to_pickle(out_file)
 

@@ -13,8 +13,16 @@ def main(project_dir):
 
     # pipeline arguments
     make_dataset_args = {'hoaxy': False}
-    build_features_args = {'pheme': True, 'tweet_level': True, 'unverified_tweets': True, 'group_by_title': True, 'filter': False}
-    build_model_args = {'vis': False, "pheme": True}
+
+    build_features_args = {'pheme': True, 
+                        'tweet_level': True, 
+                        'unverified_tweets': True, 
+                        'group_by_title': True, 
+                        'filter': False, 
+                        'emb_model': 'custom'}
+
+    build_model_args = {'vis': False, "pheme": True, 'n_clusters': 3}
+
     export_analysis_args = {}
 
     # run the data pipeline

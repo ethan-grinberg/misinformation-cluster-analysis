@@ -120,7 +120,7 @@ class PhemeFeatures(DataModel):
         extra_data['time_per_node'] = extra_data['total_time'] / num_nodes
 
         if self.group_by_title:
-            extra_data['nodes_per_thread'] = extra_data['num_threads'] / num_nodes
+            extra_data['nodes_per_thread'] = num_nodes  / extra_data['num_threads']
 
     def build_graphs(self, ids, graph_df):
         graphs = {}

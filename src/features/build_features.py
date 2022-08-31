@@ -7,7 +7,14 @@ from .graph_embed import GraphEmbed
 import sys
 
 
-def build_features(proj_dir, pheme=True, tweet_level=False, unverified_tweets=True, group_by_title=False, filter=True):
+def build_features(proj_dir, 
+    pheme=True, 
+    tweet_level=False, 
+    unverified_tweets=True, 
+    group_by_title=False, 
+    filter=True, 
+    emb_model="ugraphemb"):
+    
     """ Runs data processing scripts to turn raw data from (../raw) into
         cleaned data ready to be analyzed (saved in ../processed).
     """
@@ -27,7 +34,7 @@ def build_features(proj_dir, pheme=True, tweet_level=False, unverified_tweets=Tr
         5, 
         raw_data, 
         data_model, 
-        emb_model="ugraphemb", 
+        emb_model=emb_model, 
         tweet_level=tweet_level, 
         unverified_tweets=unverified_tweets,
         group_by_title=group_by_title,

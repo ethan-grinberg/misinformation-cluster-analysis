@@ -6,6 +6,7 @@ from .u_graph_emb import UGraphEmb
 import os
 from .hoaxy_features import HoaxyFeatures
 from .pheme_features import PhemeFeatures
+from .custom_embed import CustomEmbed
 
 class GraphEmbed:
     @staticmethod
@@ -14,7 +15,10 @@ class GraphEmbed:
         return {graph_data.iloc[i].id: graphs[i] for i in np.arange(len(graph_data))}
     
     # available graph embedding models
-    emb_models = {"feather": ge.FeatherGraph(), "graph2vec": ge.Graph2Vec(), "ugraphemb": UGraphEmb()}
+    emb_models = {"feather": ge.FeatherGraph(), 
+                "graph2vec": ge.Graph2Vec(), 
+                "ugraphemb": UGraphEmb(), 
+                'custom': CustomEmbed()}
 
     def __init__(self, 
                 processed_data,
@@ -43,6 +47,7 @@ class GraphEmbed:
             self.has_embeddings = False
 
         # configure model parameters
+        self.emb_model = emb_model
         if not self.has_embeddings:
             self.model = self.emb_models[emb_model]
             if not model_params is None:
@@ -67,7 +72,8 @@ class GraphEmbed:
         self.graphs = self.data_model.build_graphs(self.ids, self.graph_df)
 
         # get all non embedding related features
-        extra_features = self.__get_extra_features()
+        # used for embedding if custom embedding is specified
+        self.extra_features = self.__get_extra_features()
 
         if not self.has_embeddings:
             self.__fit()
@@ -81,10 +87,10 @@ class GraphEmbed:
         # make sure the precomputed graph embeddings 
         # line up with new data
         if self.has_embeddings:
-            if not list(extra_features.id) == old_ids:
+            if not list(self.extra_features.id) == old_ids:
                 raise ValueError("pre computed graph embeddings don't line up with extra features")
             
-        combined_df = pd.concat([df, extra_features], axis=1)
+        combined_df = pd.concat([df, self.extra_features], axis=1)
         return combined_df
     
     def __get_extra_features(self):
@@ -103,7 +109,12 @@ class GraphEmbed:
 
     def __fit(self):
         X = [self.graphs[i] for i in self.ids]
-        self.model.fit(X)
+
+        if self.emb_model == 'custom':
+            self.model.fit(self.extra_features)
+        else:
+            self.model.fit(X)
+        
     
     def __get_embedding(self):
         return self.model.get_embedding()
